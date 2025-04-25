@@ -1,6 +1,6 @@
 # B
 
-B compiler targeting `x86_64-linux` based on [Ken Thompson's manual](https://web.archive.org/web/20150611114427/https://www.bell-labs.com/usr/dmr/www/kbman.pdf)
+B compiler targeting `x86_64-linux` based on [Ken Thompson's manual](doc/kbman.html).
 
 ## Quickstart
 
