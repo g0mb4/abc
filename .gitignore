@@ -1,3 +1,7 @@
 *.o
 *.tmp
 b.out*
+b.tab*
+*lex.yy.c
+b/b
+hw
