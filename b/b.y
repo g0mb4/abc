@@ -1,6 +1,7 @@
 %{
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 
 #include "ast.h"
@@ -85,9 +86,11 @@ constant
 void yyerror(const char * fmt, ...) {
     va_list args;
 
-    printf("%s: %d: ", infile, yylineno);
+    fprintf(stderr, "%s: %d: ", infile, yylineno);
     va_start(args, fmt);
-    vprintf(fmt, args);
+    vfprintf(stderr, fmt, args);
     va_end(args);
-    printf("\n");
+    fprintf(stderr, "\n");
+
+    exit(1);
 }

@@ -6,6 +6,8 @@
 extern void yyerror(const char * s, ...);
 char *strdupquotes(const char * s);
 
+int escape(char c);
+
 %} /* end of the user defined code */
 
 /* use line numbers */
@@ -55,25 +57,61 @@ int yywrap(void)
     return 1;
 }
 
+int escape(char c)
+{
+    switch (c) {
+    case '0':
+    case 't':
+    case '*':
+    case '\'':
+    case '"':
+    case 'n':
+        return c;
+    case '(':
+        return '{';
+    case ')':
+        return '}';
+    case 'e':
+        return '0';
+    default:
+        return -1;
+    }
+}
+
 char *strdupquotes(const char * s)
 {
     int i, j = 0, len;
-    char *d;
+    char *dest;
+    int esc;
 
     len = strlen(s);
 
     if (len <= 2){
-            return NULL;
+        yyerror("invalid string literal: %s", s);
+        return NULL;
     }
 
-    d = malloc(len - 1);   /* lenght - 2 quotes + 1 terminator */
-    if (d == NULL)
-            return NULL;
+    dest = malloc(len - 1);   /* lenght - 2 quotes + 1 terminator */
+    if (!dest) {
+        yyerror("unable to create string literal");
+        return NULL;
+    }
 
     for (i = 1; i < (len - 1); i++){
-            d[j++] = s[i];
+        if (s[i] == '*') {
+            esc = escape(s[i+1]);
+            if (esc > 0) {
+                dest[j++] = '\\';
+                dest[j++] = (char)esc;
+            } else {
+                yyerror("invalid escape sequence in: %s", s);
+            }
+        } else {
+            dest[j++] = s[i];
+        }
     }
-    d[j] = '\0';
 
-    return d;
+    dest[j] = '\0';
+
+    return dest;
 }
