@@ -6,6 +6,10 @@
 #include <string.h>
 
 static int id = 0;
+static struct node *decls = NULL;
+
+extern void yyerror(const char * s, ...);
+static void printlist(struct node *l, int indent);
 
 struct node *empty(void)
 {
@@ -34,7 +38,7 @@ struct node *string(const char *s)
     return (struct node*)n;
 }
 
-struct node *integer(int i)
+struct node *integer(word w)
 {
     struct int_node *n;
     n = malloc(sizeof(*n));
@@ -43,7 +47,7 @@ struct node *integer(int i)
 
     n->type = N_INT;
     n->id = id++;
-    n->val = i;
+    n->val = w;
 
     return (struct node*)n;
 }
@@ -56,6 +60,34 @@ struct node *namen(const char *s)
     memset(n, 0, sizeof(*n));
 
     n->type = N_NAME;
+    n->id = id++;
+    n->val = strdup(s);
+
+    return (struct node*)n;
+}
+
+struct node *externn(const char *s)
+{
+    struct name_node *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_EXTERN;
+    n->id = id++;
+    n->val = strdup(s);
+
+    return (struct node*)n;
+}
+
+struct node *auton(const char *s)
+{
+    struct name_node *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_AUTO;
     n->id = id++;
     n->val = strdup(s);
 
@@ -78,9 +110,8 @@ struct node *list(struct node *e)
 
 struct node *listback(struct node *l, struct node *n)
 {
-    if (!l) {
+    if (!l)
         return list(n);
-    }
 
     assert(l->type == N_LIST);
     struct list_node *curr = (struct list_node*)l;
@@ -95,9 +126,8 @@ struct node *listback(struct node *l, struct node *n)
 
 struct node *listfront(struct node *l, struct node *n)
 {
-    if (!l) {
+    if (!l)
         return list(n);
-    }
 
     assert(l->type == N_LIST);
 
@@ -107,10 +137,38 @@ struct node *listfront(struct node *l, struct node *n)
     return (struct node*)new;
 }
 
+struct node *decl(struct node *n)
+{
+    decls = listback(decls, n);
+    return empty();
+}
+
+static struct node *finddecl(struct node *name)
+{
+    struct list_node *curr = ASLIST(decls);
+    while (curr) {
+        assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
+        if (curr->val->type == N_EXTERN) {
+            if (!strcmp(ASEXTERN(curr->val)->val, ASNAME(name)->val))
+                return ASNODE(curr->val);
+        } else {
+            if (!strcmp(ASAUTO(curr->val)->val, ASNAME(name)->val))
+                return ASNODE(curr->val);
+        }
+        curr = curr->next;
+    }
+
+    return NULL;
+}
+
 struct node *call(struct node *name, struct node *args)
 {
     assert(name);
     assert(name->type == N_NAME);
+
+    struct node *def = finddecl(name);
+    if (!def || def->type != N_EXTERN)
+        yyerror("unknown extern funcion `%s`", ASNAME(name)->val);
 
     if (args)
         assert(args->type == N_LIST);
@@ -145,14 +203,19 @@ struct node *def(struct node *name, struct node *args, struct node *body)
 
     n->type = N_DEF;
     n->id = id++;
+
     n->name = name;
     n->args = args;
     n->body = body;
+    n->decls = decls;
+
+    decls = NULL;
 
     return (struct node*)n;
 }
 
-static void printlist(struct node *l, int indent){
+static void printlist(struct node *l, int indent)
+{
     if (!l) {
         printf("<empty_list>\n");
         return;
@@ -160,11 +223,12 @@ static void printlist(struct node *l, int indent){
 
     assert(l->type == N_LIST);
     struct list_node *curr = (struct list_node*)l;
-    printf("LIST(%d): \n", l->id);
+    printf("LIST(%d) begin: \n", l->id);
     while (curr) {
         print(curr->val, indent + 2);
         curr = curr->next;
     }
+    printf("LIST(%d) end\n", l->id);
 }
 
 static void printdef(struct node *f, int indent)
@@ -178,6 +242,8 @@ static void printdef(struct node *f, int indent)
     print(func->name, indent + 2);
     printf("%*sARGS: ", indent+1, ""); 
     printlist(func->args, indent + 2);
+    printf("%*sDECLS: ", indent+1, ""); 
+    printlist(func->decls, indent + 2);
     printf("%*sBODY:", indent+1, ""); 
     printlist(func->body, indent + 2);
 }
@@ -206,10 +272,16 @@ void print(struct node *n, int indent)
         printf("%*sSTR(%d): `%s`\n", indent, "", n->id, ASSTR(n)->val);
         break;
     case N_INT:
-        printf("%*sINT(%d): %d\n", indent, "", n->id, ASINT(n)->val);
+        printf("%*sINT(%d): %llu\n", indent, "", n->id, ASINT(n)->val);
         break;
     case N_NAME:
         printf("%*sNAME(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
+        break;
+    case N_EXTERN:
+        printf("%*sEXTERN(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
+        break;
+    case N_AUTO:
+        printf("%*sAUTO(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
         break;
     case N_LIST:
         printlist(n, indent);

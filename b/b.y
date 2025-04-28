@@ -13,19 +13,20 @@ void yyerror(const char * s, ...);      /* custom error report */
 
 extern const char *infile;              /* from main.c */
 extern int yylineno;                    /* global variable for error riport */
+
 %}
 
 %error-verbose
 
-%union { char *s; int i; struct node *n; }
-%token <i>number
+%union { char *s; unsigned long long int w; struct node *n; }
+%token <w>number
 %token <s>str
 %token <s>name
 
 %token extrn
 
-%type <n>constant <n>lvalue <n>call_args <n>rvalue
-%type <n>args <n>statement <n>statements <n>definition <n>definitions
+%type <n>constant <n>lvalue <n>callargs <n>rvalue
+%type <n>defargs <n>statement <n>statements <n>definition <n>definitions
 %start program
 
 %%
@@ -35,18 +36,18 @@ program
     ;
 
 definitions
-    : /* 0 or more */           { $$ = NULL; }
+    :                           { $$ = NULL; }
     | definition definitions    { $$ = listfront($2, $1); }
     ;
 
 definition
-    : name '(' args ')' statements  { $$ = def(namen($1), $3, $5); }
+    : name '(' defargs ')' statements  { $$ = def(namen($1), $3, $5); }
     ;
 
-args
-    : /* 0 or more */       { $$ = NULL; }
-    | name                  { $$ = list(namen($1)); }
-    | name ',' args         { $$ = listfront($3, namen($1)); }
+defargs
+    :                           { $$ = NULL; }
+    | name                      { $$ = list(namen($1)); }
+    | name ',' defargs          { $$ = listfront($3, namen($1)); }
     ;
 
 statements
@@ -55,7 +56,7 @@ statements
     ;
 
 statement
-    : extrn name ';'     { $$ = empty(); } /* TODO: list */ /* NOTE: externs are handled by as*/
+    : extrn name ';'     { $$ = decl(externn($2)); }    /* TODO: list */
     | '{' statements '}' { $$ = $2; }
     | rvalue ';'         { $$ = $1; }
     ;
@@ -63,13 +64,13 @@ statement
 rvalue
     : lvalue                    { $$ = $1; }
     | constant                  { $$ = $1; }
-    | rvalue '(' call_args ')'  { $$ = call($1, $3); }
+    | rvalue '(' callargs ')'   { $$ = call($1, $3); }
     ;
 
-call_args
-    : /* 0 or more */           { $$ = NULL; }
-    | rvalue                    { $$ = list($1); }
-    | rvalue ',' call_args      { $$ = listfront($3, $1); }
+callargs
+    :                          { $$ = NULL; }
+    | rvalue                   { $$ = list($1); }
+    | rvalue ',' callargs      { $$ = listfront($3, $1); }
     ;
 
 lvalue

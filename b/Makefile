@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -std=gnu99 -Wall -Wextra
+CFLAGS := -std=gnu99 -Wall -Wextra -g
 
 .PHONY: all b clean
 

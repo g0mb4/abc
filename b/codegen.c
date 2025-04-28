@@ -4,7 +4,6 @@
 #include <string.h>
 #include <assert.h>
 
-
 extern FILE *out;    /* from main.c */
 
 // TODO: dynarr
@@ -90,7 +89,7 @@ static void gencall(struct node *n)
                 snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", arg->id, ASSTR(arg)->val);
                 data[data_ctr++] = strdup(buffer);
             } else {
-                fprintf(out, "\tmov $%d, %s\n", ASINT(arg)->val, argreg(argindex));
+                fprintf(out, "\tmov $%llu, %s\n", ASINT(arg)->val, argreg(argindex));
             }
 
             args = args->next;
@@ -117,6 +116,12 @@ static void gen(struct node *n)
     case N_NAME:
         /* nothing */
         break;
+    case N_EXTERN:
+        /* nothing */
+        break;
+    case N_AUTO:
+        /* nothing */
+        break;
     case N_LIST:
         genlist(n);
         break;
@@ -133,8 +138,7 @@ static void gen(struct node *n)
 
 void codegen(struct node* root)
 {
-    int i;
-    //print(root, 0);
+    print(root, 0);
 
     fprintf(out, "\t.text\n");
     gen(root);
