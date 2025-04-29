@@ -1,6 +1,6 @@
 # B
 
-B compiler targeting `x86_64-linux` based on [Ken Thompson's manual](doc/kbman.html).
+B compiler implemented in C targeting `x86_64-linux` based on [Ken Thompson's manual](doc/kbman.html).
 
 > [!WARNING]
 > Compiler is not fully implemented yet, maybe it will never will be.
