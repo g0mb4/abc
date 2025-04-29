@@ -32,6 +32,7 @@
 write:
     movq SYS_write, %rax
     syscall
+    ret
 
 /*
     exit();
@@ -41,6 +42,7 @@ exit:
     movq SYS_exit, %rax
     movq $0, %rdi
     syscall
+    ret
 
 /*
     putchar(char);
@@ -49,9 +51,14 @@ exit:
 */
     .global putchar
 putchar:
-    movb %al, (%rsp)    # only the bottom byte is used for now, see TODO
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $8, %rsp
+    movq %rdi, -8(%rbp)
     movq $1, %rdi
-    leaq (%rsp), %rsi
+    leaq -8(%rbp), %rsi
     movq $1, %rdx
     call write
+    addq $8, %rsp
+    popq %rbp
     ret

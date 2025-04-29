@@ -14,7 +14,7 @@ passed=0
 total=0
 
 compile () {
-    ${BPATH}b $1;
+    ${BPATH}b $1 > /dev/null 2>&1
     as -o b.out.o b.out.s
     ld ${LIBBPATH}/brt1.o b.out.o ${LIBBPATH}/libb1.o
     rm b.out.s
@@ -23,9 +23,9 @@ compile () {
 test () {
     echo -n "[TEST] $1 "
     compile $1.b
-    ./a.out > $1.tout
+    ./a.out > $1.stdout
 
-    cmp --silent $1.tout $1.stdout
+    cmp --silent $1.stdout $1.expected
     if [ $? -eq 0 ]; then
         let "passed = passed + 1"
         echo "[PASS]"
@@ -39,7 +39,7 @@ test () {
 gen () {
     echo "[GEN] $1"
     compile $1.b
-    ./a.out > $1.stdout
+    ./a.out > $1.expected
 }
 
 if [ "$#" -eq "0" ]; then

@@ -3,7 +3,7 @@ CFLAGS := -std=gnu99 -Wall -Wextra
 YFLAGS = 
 YYFLAGS = 
 
-.PHONY: all b clean
+.PHONY: all b clean debug
 
 all: b
 

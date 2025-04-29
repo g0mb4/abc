@@ -11,7 +11,7 @@ b:
 	make -C b $(DEBUG)
 
 libb:
-	make -C libb
+	make -C libb $(DEBUG)
 
 clean:
 	make -C b clean

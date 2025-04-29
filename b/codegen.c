@@ -123,9 +123,9 @@ static void gencall(struct node *n)
             } else if (arg->type == N_INT) {
                 fprintf(out, "\tmovq $%llu, %s\n", ASINT(arg)->val, argreg(argindex));
             } else if (arg->type == N_NAME) {
-                struct auto_node *a = (struct auto_node *)arg;
-                struct node *d = finddecl(decls, a);
+                struct node *d = finddecl(decls, ASNODE(arg));
                 assert(d);
+                assert(d->type == N_AUTO);
                 fprintf(out, "\tmovq -%llu(%%rbp), %s\n", ASAUTO(d)->offset, argreg(argindex));
             } else {
                 assert(0);
