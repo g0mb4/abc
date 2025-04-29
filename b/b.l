@@ -37,7 +37,7 @@ NUM     {DIGIT}+
 \"(\\.|[^"\\])*\"       { yylval.s = strdupquotes(yytext); return str; }
 {NUM}                   { yylval.w = strtoword(yytext); return number; }
 
- /* "auto"          { return T_AUTO; } */
+"auto"          { return autoo; }
 "extrn"         { return extrn; }
  /* "if"            { return T_IF; } */
  /* "while"         { return T_WHILE; } */

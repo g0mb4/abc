@@ -137,8 +137,14 @@ struct node *listfront(struct node *l, struct node *n)
     return (struct node*)new;
 }
 
-struct node *decl(struct node *n)
+struct node *decl(struct node *n, struct node *i)
 {
+    if (n->type == N_EXTERN)
+        assert(i == NULL);
+
+    if (i)
+        ASAUTO(n)->init = i;
+
     decls = listback(decls, n);
     return empty();
 }
@@ -278,10 +284,15 @@ void print(struct node *n, int indent)
         printf("%*sNAME(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
         break;
     case N_EXTERN:
-        printf("%*sEXTERN(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
+        printf("%*sEXTERN(%d): `%s`\n", indent, "", n->id, ASEXTERN(n)->val);
         break;
     case N_AUTO:
-        printf("%*sAUTO(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
+        printf("%*sAUTO(%d): `%s`", indent, "", n->id, ASAUTO(n)->val);
+        if (ASAUTO(n)->init) {
+            printf("=");
+            print(ASAUTO(n)->init, 0);
+        }
+        printf("\n");
         break;
     case N_LIST:
         printlist(n, indent);

@@ -12,12 +12,37 @@ static int data_ctr;
 
 static void gen(struct node *n);
 
+static int gendecl(struct node *n)
+{
+    struct auto_node *a;
+    int stack_offset = 0;
+
+    if (!n)
+        return 0;
+
+    assert(n->type == N_LIST);
+
+    struct list_node *curr = ASLIST(n);
+    while (curr) {
+        assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
+        if (curr->val->type == N_AUTO) {
+            a = ASAUTO(curr->val);
+            stack_offset += WORD_SIZE;
+            a->offset = stack_offset;
+            fprintf(out, "\tsub $8, %%rsp\n");
+        }
+        curr = curr->next;
+    }
+
+    return stack_offset;
+}
+
 static void gendef(struct node *n)
 {
     assert(n->type == N_DEF);
 
     struct def_node *def = (struct def_node*)n;
-    int stack_offset = 0;
+    word stack_offset;
 
     assert(def->args == NULL);
     assert(def->body);
@@ -29,10 +54,11 @@ static void gendef(struct node *n)
     fprintf(out, "\tpushq %%rbp\n");
     fprintf(out, "\tmovq %%rsp, %%rbp\n");
 
+    stack_offset = gendecl(def->decls);
     gen(def->body);
 
     // epilog
-    fprintf(out, "\tadd %d, %%rsp\n", stack_offset);
+    fprintf(out, "\tadd $%llu, %%rsp\n", stack_offset);
     fprintf(out, "\tpopq %%rbp\n");
     fprintf(out, "\tret\n");
 }

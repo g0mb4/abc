@@ -16,7 +16,7 @@ extern int yylineno;                    /* global variable for error riport */
 
 %}
 
-%error-verbose
+%define parse.error verbose
 
 %union { char *s; unsigned long long int w; struct node *n; }
 %token <w>number
@@ -24,6 +24,7 @@ extern int yylineno;                    /* global variable for error riport */
 %token <s>name
 
 %token extrn
+%token autoo
 
 %type <n>constant <n>lvalue <n>callargs <n>rvalue
 %type <n>defargs <n>statement <n>statements <n>definition <n>definitions
@@ -56,7 +57,9 @@ statements
     ;
 
 statement
-    : extrn name ';'     { $$ = decl(externn($2)); }    /* TODO: list */
+    : extrn name ';'              { $$ = decl(externn($2), NULL); }  /* TODO: list */
+    | autoo name ';'              { $$ = decl(auton($2), NULL); };     /* TODO: list */
+    | autoo name constant ';'     { $$ = decl(auton($2), $3); };       /* TODO: list */
     | '{' statements '}' { $$ = $2; }
     | rvalue ';'         { $$ = $1; }
     ;

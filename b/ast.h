@@ -88,6 +88,8 @@ struct auto_node {
     int id;
     
     const char *val;
+    const char *init;
+    word offset;    /* for codegen */
 };
 
 struct node *empty(void);
@@ -99,7 +101,7 @@ struct node *namen(const char *s);
 struct node *list(struct node *e);
 struct node *listback(struct node *l, struct node *n);
 struct node *listfront(struct node *l, struct node *n);
-struct node *decl(struct node *n);
+struct node *decl(struct node *n, struct node *i);
 
 struct node *call(struct node *name, struct node *args);
 struct node *def(struct node *name, struct node *args, struct node *body);
