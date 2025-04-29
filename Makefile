@@ -1,4 +1,4 @@
-.PHONY: b libb clean
+.PHONY: b libb clean check
 
 DEBUG =
 
@@ -17,4 +17,5 @@ clean:
 	make -C b clean
 	make -C libb clean
 
-
+check: all
+	cd test; bash test.sh
