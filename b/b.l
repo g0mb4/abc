@@ -26,7 +26,13 @@ DIGIT   [0-9]
 NAME    {ALPHA}+
 NUM     {DIGIT}+
 
+%x COMMENT
+
 %%  /* start of the rules */
+
+"/*"                    { BEGIN(COMMENT); }
+<COMMENT>"*/"           { BEGIN(INITIAL); }
+<COMMENT>.              { }
 
 \"(\\.|[^"\\])*\"       { yylval.s = strdupquotes(yytext); return str; }
 {NUM}                   { yylval.w = strtoword(yytext); return number; }
