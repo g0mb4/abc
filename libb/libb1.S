@@ -41,3 +41,17 @@ exit:
     movq SYS_exit, %rax
     movq $0, %rdi
     syscall
+
+/*
+    putchar(char);
+
+    TODO: char can be 'a*n', or even 'abcdefgh'
+*/
+    .global putchar
+putchar:
+    movb %al, (%rsp)    # only the bottom byte is used for now, see TODO
+    movq $1, %rdi
+    leaq (%rsp), %rsi
+    movq $1, %rdx
+    call write
+    ret

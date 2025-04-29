@@ -115,15 +115,20 @@ static void gencall(struct node *n)
         while (args) {
             struct node *arg = args->val;
 
-            assert(arg->type == N_STRING || arg->type == N_INT);
             if (arg->type == N_STRING) {
-                fprintf(out, "\tmov $str_%d, %s\n", arg->id, argreg(argindex));
-
+                fprintf(out, "\tmovq $str_%d, %s\n", arg->id, argreg(argindex));
                 memset(buffer, 0, sizeof(buffer));
                 snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", arg->id, ASSTR(arg)->val);
                 data[data_ctr++] = strdup(buffer);
+            } else if (arg->type == N_INT) {
+                fprintf(out, "\tmovq $%llu, %s\n", ASINT(arg)->val, argreg(argindex));
+            } else if (arg->type == N_NAME) {
+                struct auto_node *a = (struct auto_node *)arg;
+                struct node *d = finddecl(decls, a);
+                assert(d);
+                fprintf(out, "\tmovq -%llu(%%rbp), %s\n", ASAUTO(d)->offset, argreg(argindex));
             } else {
-                fprintf(out, "\tmov $%llu, %s\n", ASINT(arg)->val, argreg(argindex));
+                assert(0);
             }
 
             args = args->next;
