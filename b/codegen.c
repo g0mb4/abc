@@ -1,4 +1,5 @@
 #include "codegen.h"
+#include "helpers.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -10,26 +11,31 @@ extern FILE *out;    /* from main.c */
 static const char *data[1024];
 static int data_ctr;
 
+static struct node *decls = NULL;
+
 static void gen(struct node *n);
 
-static int gendecl(struct node *n)
+static word gendecl(void)
 {
     struct auto_node *a;
-    int stack_offset = 0;
+    word stack_offset = 0;
 
-    if (!n)
+    if (!decls)
         return 0;
 
-    assert(n->type == N_LIST);
-
-    struct list_node *curr = ASLIST(n);
+    struct list_node *curr = ASLIST(decls);
     while (curr) {
         assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
         if (curr->val->type == N_AUTO) {
             a = ASAUTO(curr->val);
             stack_offset += WORD_SIZE;
-            a->offset = stack_offset;
-            fprintf(out, "\tsub $8, %%rsp\n");
+            ASAUTO(curr->val)->offset = stack_offset;   /* update the list element, not the copy */
+            fprintf(out, "\tsubq $%d, %%rsp\n", WORD_SIZE);
+
+            if (a->init) {
+                assert(a->init->type == N_INT);
+                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, stack_offset);
+            }
         }
         curr = curr->next;
     }
@@ -54,11 +60,13 @@ static void gendef(struct node *n)
     fprintf(out, "\tpushq %%rbp\n");
     fprintf(out, "\tmovq %%rsp, %%rbp\n");
 
-    stack_offset = gendecl(def->decls);
+    decls = def->decls;
+    stack_offset = gendecl();
+
     gen(def->body);
 
     // epilog
-    fprintf(out, "\tadd $%llu, %%rsp\n", stack_offset);
+    fprintf(out, "\taddq $%llu, %%rsp\n", stack_offset);
     fprintf(out, "\tpopq %%rbp\n");
     fprintf(out, "\tret\n");
 }
@@ -126,6 +134,31 @@ static void gencall(struct node *n)
     fprintf(out, "\tcall %s\n", ((struct name_node *)call->name)->val);
 }
 
+static void genassign(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_ASSIGN);
+
+    struct assign_node *a = (struct assign_node *)n;
+
+    assert(a->left);
+    assert(a->left->type == N_NAME);
+    assert(a->right);
+    assert(a->right->type == N_INT);
+
+    struct node *left = finddecl(decls, a->left);
+    assert(left);
+
+    assert(left->type == N_AUTO || left->type == N_EXTERN);
+    if (left->type == N_AUTO) {
+        fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->right)->val, ASAUTO(left)->offset);
+    } else if (left->type == N_EXTERN) {
+        fprintf(out, "\tmovq $%llu, %s\n", ASINT(a->right)->val, ASEXTERN(left)->val);
+    } else {
+        assert(0);
+    }
+}
+
 static void gen(struct node *n)
 {
     assert(n);
@@ -157,6 +190,9 @@ static void gen(struct node *n)
     case N_DEF:
         gendef(n);
         break;
+    case N_ASSIGN:
+        genassign(n);
+        break;
     default:
         assert(0);
     };
@@ -164,7 +200,9 @@ static void gen(struct node *n)
 
 void codegen(struct node* root)
 {
+#ifdef DEBUG
     print(root, 0);
+#endif
 
     fprintf(out, "\t.text\n");
     gen(root);

@@ -67,6 +67,7 @@ statement
 rvalue
     : lvalue                    { $$ = $1; }
     | constant                  { $$ = $1; }
+    | lvalue '=' rvalue         { $$ = assignn($1, $3); }
     | rvalue '(' callargs ')'   { $$ = call($1, $3); }
     ;
 

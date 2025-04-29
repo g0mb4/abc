@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "helpers.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -94,6 +95,26 @@ struct node *auton(const char *s)
     return (struct node*)n;
 }
 
+struct node *assignn(struct node *l, struct node *r)
+{
+    struct assign_node *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    assert(l->type == N_NAME);
+    struct node* d = finddecl(decls, l);
+    if (!d)
+        yyerror("unknown variable `%s`", ASNAME(l)->val);
+
+    n->type = N_ASSIGN;
+    n->id = id++;
+    n->left = l;
+    n->right = r;
+
+    return (struct node*)n;
+}
+
 struct node *list(struct node *e)
 {
     struct list_node *n;
@@ -149,30 +170,12 @@ struct node *decl(struct node *n, struct node *i)
     return empty();
 }
 
-static struct node *finddecl(struct node *name)
-{
-    struct list_node *curr = ASLIST(decls);
-    while (curr) {
-        assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
-        if (curr->val->type == N_EXTERN) {
-            if (!strcmp(ASEXTERN(curr->val)->val, ASNAME(name)->val))
-                return ASNODE(curr->val);
-        } else {
-            if (!strcmp(ASAUTO(curr->val)->val, ASNAME(name)->val))
-                return ASNODE(curr->val);
-        }
-        curr = curr->next;
-    }
-
-    return NULL;
-}
-
 struct node *call(struct node *name, struct node *args)
 {
     assert(name);
     assert(name->type == N_NAME);
 
-    struct node *def = finddecl(name);
+    struct node *def = finddecl(decls, name);
     if (!def || def->type != N_EXTERN)
         yyerror("unknown extern funcion `%s`", ASNAME(name)->val);
 
@@ -220,21 +223,23 @@ struct node *def(struct node *name, struct node *args, struct node *body)
     return (struct node*)n;
 }
 
-static void printlist(struct node *l, int indent)
+static void printlist(struct node *n, int indent)
 {
-    if (!l) {
+    if (!n) {
         printf("<empty_list>\n");
         return;
     }
 
-    assert(l->type == N_LIST);
-    struct list_node *curr = (struct list_node*)l;
-    printf("LIST(%d) begin: \n", l->id);
+    assert(n->type == N_LIST);
+
+    struct list_node *curr = (struct list_node*)n;
+
+    printf("LIST(%d) begin: \n", n->id);
     while (curr) {
         print(curr->val, indent + 2);
         curr = curr->next;
     }
-    printf("LIST(%d) end\n", l->id);
+    printf("LIST(%d) end\n", n->id);
 }
 
 static void printdef(struct node *f, int indent)
@@ -254,17 +259,35 @@ static void printdef(struct node *f, int indent)
     printlist(func->body, indent + 2);
 }
 
-static void printcall(struct node *f, int indent)
+static void printcall(struct node *n, int indent)
 {
-    assert(f);
-    assert(f->type == N_CALL);
+    assert(n);
+    assert(n->type == N_CALL);
 
-    printf("%*sCALL(%d):\n", indent, "", f->id);
-    struct def_node *func = (struct def_node*)f;
+    struct def_node *f = (struct def_node*)n;
+
+    printf("%*sCALL(%d):\n", indent, "", n->id);
     printf("%*sNAME: ", indent+1, ""); 
-    print(func->name, indent + 2);
+    print(f->name, indent + 2);
     printf("%*sARGS: ", indent+1, ""); 
-    printlist(func->args, indent + 2);
+    printlist(f->args, indent + 2);
+}
+
+static void printassign(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_ASSIGN);
+
+    struct assign_node *a = (struct assign_node*)n;
+
+    assert(a->left);
+    assert(a->right);
+
+    printf("%*sASSIGN(%d):\n", indent, "", a->id);
+    printf("%*sLEFT:\n", indent, "");
+    print(a->left, indent + 2);
+    printf("%*sRIGHT:\n", indent, "");
+    print(a->right, indent + 2);
 }
 
 void print(struct node *n, int indent)
@@ -302,6 +325,9 @@ void print(struct node *n, int indent)
         break;
     case N_DEF:
         printdef(n, indent);
+        break;
+    case N_ASSIGN:
+        printassign(n, indent);
         break;
     default:
         printf("unknown type: %d\n", n->type);

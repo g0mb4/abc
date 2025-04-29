@@ -55,6 +55,8 @@ NUM     {DIGIT}+
 ;               { return ';'; }
 ,               { return ','; }
 
+=               { return '='; }
+
 \n              { } /* update yylineno */
 [ \t\r]+        { ; } /* ignore whitespace */
 .               { yyerror("unrecognized input: %s", yytext); }

@@ -10,14 +10,18 @@ extern int yyparse(void);
 const char *infile;
 FILE *out;
 
+#ifdef DEBUG
 extern int yydebug;
+#endif
 
 int main(int argc, char ** argv) {
     FILE *in;
     const char *outfile = "b.out.s";
     int ret;
 
+#ifdef DEBUG
     yydebug = 1;
+#endif
 
     if (argc != 2) {
         fprintf(stderr, "usage: b <file>\n");

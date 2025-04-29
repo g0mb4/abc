@@ -22,6 +22,7 @@ enum {
     N_DEF,
     N_EXTERN,
     N_AUTO,
+    N_ASSIGN,
 };
 
 struct node {
@@ -88,8 +89,16 @@ struct auto_node {
     int id;
     
     const char *val;
-    const char *init;
+    struct node *init;
     word offset;    /* for codegen */
+};
+
+struct assign_node {
+    int type;
+    int id;
+    
+    struct node *left;
+    struct node *right;
 };
 
 struct node *empty(void);
@@ -108,6 +117,8 @@ struct node *def(struct node *name, struct node *args, struct node *body);
 
 struct node *externn(const char *s);
 struct node *auton(const char *s);
+
+struct node *assignn(struct node *l, struct node *r);
 
 void print(struct node *n, int indent);
 
