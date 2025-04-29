@@ -24,11 +24,18 @@
 /*
     registers already have their values set via regular function calls
 */
+
+/*
+    nwrite = write(file, buffer, count);
+*/
     .global write
 write:
     movq SYS_write, %rax
     syscall
 
+/*
+    exit();
+*/
     .global exit
 exit:
     movq SYS_exit, %rax
