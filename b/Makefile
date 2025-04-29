@@ -1,18 +1,25 @@
 CC := gcc
-CFLAGS := -std=gnu99 -Wall -Wextra -g
+CFLAGS := -std=gnu99 -Wall -Wextra
+YFLAGS = 
+YYFLAGS = 
 
 .PHONY: all b clean
 
 all: b
 
-b: main.o ast.o codegen.o b.tab.o lex.yy.o
+debug: CFLAGS += -ggdb -DDEBUG
+debug: YFLAGS += --debug
+debug: YYFLAGS += --debug
+debug: b
+
+b: main.o ast.o codegen.o b.tab.o lex.yy.o helpers.o
 	$(CC) -o $@ $^
 
 b.tab.c b.tab.y: b.y
-	bison --debug -d $<
+	bison $(YFLAGS) -d $<
 
 lex.yy.c: b.l b.tab.h
-	flex --debug $<
+	flex $(YYFLAGS)  $<
 
 clean:
 	find . -type f -name "b" -delete

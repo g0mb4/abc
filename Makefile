@@ -1,9 +1,14 @@
 .PHONY: b libb clean
 
+DEBUG =
+
 all: b libb
 
+debug: DEBUG += debug
+debug: all
+
 b:
-	make -C b
+	make -C b $(DEBUG)
 
 libb:
 	make -C libb
