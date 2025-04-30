@@ -84,6 +84,38 @@ static void genlist(struct node *n)
     }
 }
 
+static void genbinary(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_BINARY);
+
+    struct binary_node *b = (struct binary_node*)n;
+
+    gen(b->right);  // value in %rax
+    fprintf(out, "\tmovq %%rax, %%rdx\n");
+    gen(b->left);   // value in %rax
+   
+    switch(b->op) {
+    case '+':
+        fprintf(out, "\taddq %%rdx, %%rax\n");
+        break;
+    case '-':
+        fprintf(out, "\tsubq %%rdx, %%rax\n");
+        break;
+    case '*':
+        fprintf(out, "\timulq %%rdx, %%rax\n");
+        break;
+    case '/':
+        fprintf(out, "\tmovq %%rdx, %%rcx\n");
+        fprintf(out, "\tmovq $0, %%rdx\n");
+        fprintf(out, "\tcqto\n");
+        fprintf(out, "\tidivq %%rcx\n");
+        break;
+    default:
+        assert(0);
+    }
+}
+
 static char *argreg(int index)
 {
     switch(index) {
@@ -127,6 +159,9 @@ static void gencall(struct node *n)
                 assert(d);
                 assert(d->type == N_AUTO);
                 fprintf(out, "\tmovq -%llu(%%rbp), %s\n", ASAUTO(d)->offset, argreg(argindex));
+            } else if (arg->type == N_BINARY) {
+                genbinary(arg);
+                fprintf(out, "\tmovq %%rax, %s\n", argreg(argindex));
             } else {
                 assert(0);
             }
@@ -139,6 +174,18 @@ static void gencall(struct node *n)
     fprintf(out, "\tcall %s\n", ((struct name_node *)call->name)->val);
 }
 
+static void genname(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_NAME);
+
+    struct node *var = finddecl(decls, n);
+    assert(var);
+
+    assert(var->type == N_AUTO || var->type == N_EXTERN);
+    gen(var);
+}
+
 static void genassign(struct node *n)
 {
     assert(n);
@@ -149,16 +196,24 @@ static void genassign(struct node *n)
     assert(a->left);
     assert(a->left->type == N_NAME);
     assert(a->right);
-    assert(a->right->type == N_INT);
+    assert(a->right->type == N_INT || a->right->type == N_BINARY);
 
     struct node *left = finddecl(decls, a->left);
     assert(left);
 
     assert(left->type == N_AUTO || left->type == N_EXTERN);
+    if (a->right->type == N_INT) {
+        fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(a->right)->val);
+    } else if (a->right->type == N_BINARY) {
+        genbinary(a->right);
+    } else {
+        assert(0);
+    }
+
     if (left->type == N_AUTO) {
-        fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->right)->val, ASAUTO(left)->offset);
+        fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(left)->offset);
     } else if (left->type == N_EXTERN) {
-        fprintf(out, "\tmovq $%llu, %s\n", ASINT(a->right)->val, ASEXTERN(left)->val);
+        fprintf(out, "\tmovq %%rax, %s\n", ASEXTERN(left)->val);
     } else {
         assert(0);
     }
@@ -169,22 +224,22 @@ static void gen(struct node *n)
     assert(n);
     switch(n->type) {
     case N_EMPTY:
-        /* nothing */
-        break;
-    case N_STRING:
-        /* nothing */
-        break;
-    case N_INT:
-        /* nothing */
-        break;
-    case N_NAME:
-        /* nothing */
+        /* do nothing */
         break;
     case N_EXTERN:
-        /* nothing */
+        fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(n)->val);
         break;
     case N_AUTO:
-        /* nothing */
+        fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(n)->offset);
+        break;
+    case N_INT:
+        fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(n)->val);
+        break;
+    case N_STRING:
+        fprintf(out, "\tmovq $str_%d, %%rax\n", n->id);
+        break;
+    case N_NAME:
+        genname(n);
         break;
     case N_LIST:
         genlist(n);
@@ -197,6 +252,9 @@ static void gen(struct node *n)
         break;
     case N_ASSIGN:
         genassign(n);
+        break;
+    case N_BINARY:
+        genbinary(n);
         break;
     default:
         assert(0);

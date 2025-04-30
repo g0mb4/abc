@@ -21,12 +21,6 @@ word strtochar(const char *s);
 /* don't generate yyunput() */
 %option nounput
 
-ALPHA   [A-Za-z_]
-DIGIT   [0-9]
-
-NAME    {ALPHA}+
-NUM     {DIGIT}+
-
 %x COMMENT
 
 %%  /* start of the rules */
@@ -35,12 +29,12 @@ NUM     {DIGIT}+
 <COMMENT>"*/"           { BEGIN(INITIAL); }
 <COMMENT>.              { }
 
-\"(\\.|[^"\\])*\"        { yylval.s = strdupquotes(yytext); return str; }
-[\'][a-zA-Z0-9*()']+[\'] { yylval.w = strtochar(yytext); return number; }
-{NUM}                    { yylval.w = strtoword(yytext); return number; }
+\"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return str; }
+[\'][A-Za-z0-9_*()']+[\']   { yylval.w = strtochar(yytext); return number; }
+[-]?[0-9]+                  { yylval.w = strtoword(yytext); return number; }
 
-"auto"          { return autoo; }
-"extrn"         { return extrn; }
+"auto"              { return autoo; }
+"extrn"             { return extrn; }
  /* "if"            { return T_IF; } */
  /* "while"         { return T_WHILE; } */
  /* "switch"        { return T_SWITCH; } */
@@ -48,7 +42,7 @@ NUM     {DIGIT}+
  /* "goto"          { return T_GOTO; } */
  /* "return"        { return T_RETURN; } */
 
-{NAME}          { yylval.s = strdup(yytext); return name; }
+[A-Za-z_]+      { yylval.s = strdup(yytext); return name; }
 \(              { return '('; }
 \)              { return ')'; }
 \{              { return '{'; }
@@ -56,6 +50,11 @@ NUM     {DIGIT}+
 
 ;               { return ';'; }
 ,               { return ','; }
+
+\+              { yylval.w = '+'; return '+'; }
+\-              { yylval.w = '-'; return '-'; }
+\*              { yylval.w = '*'; return '*'; }
+\/              { yylval.w = '/'; return '/'; }
 
 =               { return '='; }
 
@@ -73,9 +72,9 @@ int yywrap(void)
 word strtoword(const char *s)
 {
     if (*s == '0')
-        return strtoull(s, NULL, 8);
+        return strtoll(s, NULL, 8);
     else
-        return strtoull(s, NULL, 10);
+        return strtoll(s, NULL, 10);
 }
 
 int escape(char c)

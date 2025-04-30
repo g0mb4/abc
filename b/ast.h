@@ -9,7 +9,7 @@
 #define ASEXTERN(n) ((struct extern_node *)n)
 #define ASAUTO(n) ((struct auto_node *)n)
 
-typedef unsigned long long int word;
+typedef long long int word;
 #define WORD_SIZE   8
 
 enum {
@@ -23,6 +23,7 @@ enum {
     N_EXTERN,
     N_AUTO,
     N_ASSIGN,
+    N_BINARY,
 };
 
 struct node {
@@ -101,6 +102,16 @@ struct assign_node {
     struct node *right;
 };
 
+struct binary_node {
+    int type;
+    int id;
+
+    int op;
+    
+    struct node *left;
+    struct node *right;
+};
+
 struct node *empty(void);
 
 struct node *string(const char *s);
@@ -119,6 +130,7 @@ struct node *externn(const char *s);
 struct node *auton(const char *s);
 
 struct node *assignn(struct node *l, struct node *r);
+struct node *binaryn(int op, struct node *l, struct node *r);
 
 void print(struct node *n, int indent);
 

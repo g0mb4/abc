@@ -10,7 +10,6 @@ static int id = 0;
 static struct node *decls = NULL;
 
 extern void yyerror(const char * s, ...);
-static void printlist(struct node *l, int indent);
 
 struct node *empty(void)
 {
@@ -223,114 +222,19 @@ struct node *def(struct node *name, struct node *args, struct node *body)
     return (struct node*)n;
 }
 
-static void printlist(struct node *n, int indent)
+struct node *binaryn(int op, struct node *l, struct node *r)
 {
-    if (!n) {
-        printf("<empty_list>\n");
-        return;
-    }
-
-    assert(n->type == N_LIST);
-
-    struct list_node *curr = (struct list_node*)n;
-
-    printf("LIST(%d) begin: \n", n->id);
-    while (curr) {
-        print(curr->val, indent + 2);
-        curr = curr->next;
-    }
-    printf("LIST(%d) end\n", n->id);
-}
-
-static void printdef(struct node *f, int indent)
-{
-    assert(f);
-    assert(f->type == N_DEF);
-
-    printf("%*sDEF(%d):\n", indent+1, "", f->id);
-    struct def_node *func = (struct def_node*)f;
-    printf("%*sNAME: ", indent+1, ""); 
-    print(func->name, indent + 2);
-    printf("%*sARGS: ", indent+1, ""); 
-    printlist(func->args, indent + 2);
-    printf("%*sDECLS: ", indent+1, ""); 
-    printlist(func->decls, indent + 2);
-    printf("%*sBODY:", indent+1, ""); 
-    printlist(func->body, indent + 2);
-}
-
-static void printcall(struct node *n, int indent)
-{
+    struct binary_node *n;
+    n = malloc(sizeof(*n));
     assert(n);
-    assert(n->type == N_CALL);
+    memset(n, 0, sizeof(*n));
 
-    struct def_node *f = (struct def_node*)n;
+    n->type = N_BINARY;
+    n->id = id++;
 
-    printf("%*sCALL(%d):\n", indent, "", n->id);
-    printf("%*sNAME: ", indent+1, ""); 
-    print(f->name, indent + 2);
-    printf("%*sARGS: ", indent+1, ""); 
-    printlist(f->args, indent + 2);
-}
+    n->op = op;
+    n->left = l;
+    n->right = r;
 
-static void printassign(struct node *n, int indent)
-{
-    assert(n);
-    assert(n->type == N_ASSIGN);
-
-    struct assign_node *a = (struct assign_node*)n;
-
-    assert(a->left);
-    assert(a->right);
-
-    printf("%*sASSIGN(%d):\n", indent, "", a->id);
-    printf("%*sLEFT:\n", indent, "");
-    print(a->left, indent + 2);
-    printf("%*sRIGHT:\n", indent, "");
-    print(a->right, indent + 2);
-}
-
-void print(struct node *n, int indent)
-{
-    assert(n);
-    switch(n->type) {
-    case N_EMPTY:
-        printf("%*sEMPTY(%d)\n", indent, "", n->id);
-        break;
-    case N_STRING:
-        printf("%*sSTR(%d): `%s`\n", indent, "", n->id, ASSTR(n)->val);
-        break;
-    case N_INT:
-        printf("%*sINT(%d): %llu\n", indent, "", n->id, ASINT(n)->val);
-        break;
-    case N_NAME:
-        printf("%*sNAME(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
-        break;
-    case N_EXTERN:
-        printf("%*sEXTERN(%d): `%s`\n", indent, "", n->id, ASEXTERN(n)->val);
-        break;
-    case N_AUTO:
-        printf("%*sAUTO(%d): `%s`", indent, "", n->id, ASAUTO(n)->val);
-        if (ASAUTO(n)->init) {
-            printf("=");
-            print(ASAUTO(n)->init, 0);
-        }
-        printf("\n");
-        break;
-    case N_LIST:
-        printlist(n, indent);
-        break;
-    case N_CALL:
-        printcall(n, indent);
-        break;
-    case N_DEF:
-        printdef(n, indent);
-        break;
-    case N_ASSIGN:
-        printassign(n, indent);
-        break;
-    default:
-        printf("unknown type: %d\n", n->type);
-        assert(0);
-    };
+    return (struct node*)n;
 }

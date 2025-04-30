@@ -26,6 +26,17 @@ extern int yylineno;                    /* global variable for error riport */
 %token extrn
 %token autoo
 
+%token <w>'+'
+%token <w>'-'
+%token <w>'*'
+%token <w>'/'
+
+/* precedence */
+%left '+' '-'
+%left '*' '/'
+
+%type <w>binary
+
 %type <n>constant <n>lvalue <n>callargs <n>rvalue
 %type <n>defargs <n>statement <n>statements <n>definition <n>definitions
 %start program
@@ -60,15 +71,24 @@ statement
     : extrn name ';'              { $$ = decl(externn($2), NULL); }  /* TODO: list */
     | autoo name ';'              { $$ = decl(auton($2), NULL); };     /* TODO: list */
     | autoo name constant ';'     { $$ = decl(auton($2), $3); };       /* TODO: list */
-    | '{' statements '}' { $$ = $2; }
-    | rvalue ';'         { $$ = $1; }
+    | '{' statements '}'          { $$ = $2; }
+    | rvalue ';'                  { $$ = $1; }
     ;
 
 rvalue
-    : lvalue                    { $$ = $1; }
+    : '(' rvalue ')'            { $$ = $2; };
+    | lvalue                    { $$ = $1; }
     | constant                  { $$ = $1; }
     | lvalue '=' rvalue         { $$ = assignn($1, $3); }
+    | rvalue binary rvalue      { $$ = binaryn($2, $1, $3); }
     | rvalue '(' callargs ')'   { $$ = call($1, $3); }
+    ;
+
+binary
+    : '-'   { $$ = $1; };
+    | '+'   { $$ = $1; };
+    | '*'   { $$ = $1; };
+    | '/'   { $$ = $1; };
     ;
 
 callargs

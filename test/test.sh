@@ -9,6 +9,7 @@ tests=(
     t-hw
     t-auto
     t-char
+    t-arith
 )
 
 passed=0
