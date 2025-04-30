@@ -12,35 +12,71 @@ static const char *data[1024];
 static int data_ctr;
 
 static struct node *decls = NULL;
+word stack = 0;
 
 static void gen(struct node *n);
 
-static word gendecl(void)
+static char *argreg(int index)
+{
+    switch(index) {
+    case 0: return "%rdi";
+    case 1: return "%rsi";
+    case 2: return "%rdx";
+    case 3: return "%rcx";
+    case 4: return "%r8";
+    case 5: return "%r9";
+    default:
+        assert(0);
+    }
+}
+
+static void gendecl(void)
 {
     struct auto_node *a;
-    word stack_offset = 0;
 
     if (!decls)
-        return 0;
+        return;
 
     struct list_node *curr = ASLIST(decls);
     while (curr) {
         assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
         if (curr->val->type == N_AUTO) {
             a = ASAUTO(curr->val);
-            stack_offset += WORD_SIZE;
-            ASAUTO(curr->val)->offset = stack_offset;   /* update the list element, not the copy */
+            stack += WORD_SIZE;
+            ASAUTO(curr->val)->offset = stack;   /* update the list element, not the copy */
             fprintf(out, "\tsubq $%d, %%rsp\n", WORD_SIZE);
 
             if (a->init) {
                 assert(a->init->type == N_INT);
-                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, stack_offset);
+                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, stack);
             }
         }
         curr = curr->next;
     }
+}
 
-    return stack_offset;
+static void genargs(struct node *n)
+{
+    struct auto_node *a;
+
+    if (!n)
+        return;
+
+    assert(n->type == N_LIST);
+    struct list_node *curr = ASLIST(n);
+    int i = 0;
+    while (curr) {
+        assert(curr->val->type == N_NAME);
+        a = ASAUTO(auton(ASNAME(curr->val)->val));
+        stack += WORD_SIZE;
+        a->offset = stack;
+        fprintf(out, "\tsubq $%d, %%rsp\n", WORD_SIZE);
+        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(i++), stack);
+
+        decls = listback(decls, ASNODE(a));
+
+        curr = curr->next;
+    }
 }
 
 static void gendef(struct node *n)
@@ -48,9 +84,7 @@ static void gendef(struct node *n)
     assert(n->type == N_DEF);
 
     struct def_node *def = (struct def_node*)n;
-    word stack_offset;
 
-    assert(def->args == NULL);
     assert(def->body);
 
     fprintf(out, "\t.global %s\n", ASSTR(def->name)->val);
@@ -61,14 +95,18 @@ static void gendef(struct node *n)
     fprintf(out, "\tmovq %%rsp, %%rbp\n");
 
     decls = def->decls;
-    stack_offset = gendecl();
+    gendecl();
+    genargs(def->args);
 
     gen(def->body);
 
     // epilog
-    fprintf(out, "\taddq $%llu, %%rsp\n", stack_offset);
+    fprintf(out, "label:\n");
+    fprintf(out, "\taddq $%llu, %%rsp\n", stack);
     fprintf(out, "\tpopq %%rbp\n");
     fprintf(out, "\tret\n");
+
+    stack = 0;
 }
 
 static void genlist(struct node *n)
@@ -111,20 +149,6 @@ static void genbinary(struct node *n)
         fprintf(out, "\tcqto\n");
         fprintf(out, "\tidivq %%rcx\n");
         break;
-    default:
-        assert(0);
-    }
-}
-
-static char *argreg(int index)
-{
-    switch(index) {
-    case 0: return "%rdi";
-    case 1: return "%rsi";
-    case 2: return "%rdx";
-    case 3: return "%rcx";
-    case 4: return "%r8";
-    case 5: return "%r9";
     default:
         assert(0);
     }
@@ -196,16 +220,16 @@ static void genassign(struct node *n)
     assert(a->left);
     assert(a->left->type == N_NAME);
     assert(a->right);
-    assert(a->right->type == N_INT || a->right->type == N_BINARY);
 
     struct node *left = finddecl(decls, a->left);
     assert(left);
 
-    assert(left->type == N_AUTO || left->type == N_EXTERN);
     if (a->right->type == N_INT) {
         fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(a->right)->val);
     } else if (a->right->type == N_BINARY) {
         genbinary(a->right);
+    } else if (a->right->type == N_CALL) {
+        gencall(a->right);
     } else {
         assert(0);
     }
@@ -217,6 +241,19 @@ static void genassign(struct node *n)
     } else {
         assert(0);
     }
+}
+
+static void genreturn(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_RETURN);
+
+    struct return_node *ret = (struct return_node *)n;
+
+    if (ret->val)
+        gen(ret->val);
+
+    fprintf(out, "\tjmp label\n");
 }
 
 static void gen(struct node *n)
@@ -255,6 +292,9 @@ static void gen(struct node *n)
         break;
     case N_BINARY:
         genbinary(n);
+        break;
+    case N_RETURN:
+        genreturn(n);
         break;
     default:
         assert(0);

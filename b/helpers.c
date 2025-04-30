@@ -56,7 +56,7 @@ struct node *listfront(struct node *l, struct node *n)
     return (struct node*)new;
 }
 
-void printlist(struct node *n, int indent)
+static void printlist(struct node *n, int indent)
 {
     if (!n) {
         printf("<empty_list>\n");
@@ -75,7 +75,7 @@ void printlist(struct node *n, int indent)
     printf("LIST(%d) end\n", n->id);
 }
 
-void printdef(struct node *f, int indent)
+static void printdef(struct node *f, int indent)
 {
     assert(f);
     assert(f->type == N_DEF);
@@ -92,7 +92,7 @@ void printdef(struct node *f, int indent)
     printlist(func->body, indent + 2);
 }
 
-void printcall(struct node *n, int indent)
+static void printcall(struct node *n, int indent)
 {
     assert(n);
     assert(n->type == N_CALL);
@@ -106,7 +106,7 @@ void printcall(struct node *n, int indent)
     printlist(f->args, indent + 2);
 }
 
-void printassign(struct node *n, int indent)
+static void printassign(struct node *n, int indent)
 {
     assert(n);
     assert(n->type == N_ASSIGN);
@@ -123,7 +123,7 @@ void printassign(struct node *n, int indent)
     print(a->right, indent + 2);
 }
 
-void printbinary(struct node *n, int indent)
+static void printbinary(struct node *n, int indent)
 {
     assert(n);
     assert(n->type == N_BINARY);
@@ -136,6 +136,18 @@ void printbinary(struct node *n, int indent)
     print(b->left, indent + 2);
     printf("%*sRIGHT:\n", indent, "");
     print(b->right, indent + 2);
+}
+
+static void printreturn(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_RETURN);
+
+    struct return_node *ret = (struct return_node*)n;
+
+    printf("%*sRETURN(%d)\n", indent, "", ret->id);
+    if (ret->val)
+        print(ret->val, indent);
 }
 
 void print(struct node *n, int indent)
@@ -179,6 +191,9 @@ void print(struct node *n, int indent)
         break;
     case N_BINARY:
         printbinary(n, indent);
+        break;
+    case N_RETURN:
+        printreturn(n, indent);
         break;
     default:
         printf("unknown type: %d\n", n->type);

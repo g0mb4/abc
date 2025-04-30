@@ -25,6 +25,7 @@ extern int yylineno;                    /* global variable for error riport */
 
 %token extrn
 %token autoo
+%token returnn
 
 %token <w>'+'
 %token <w>'-'
@@ -53,7 +54,7 @@ definitions
     ;
 
 definition
-    : name '(' defargs ')' statements  { $$ = def(namen($1), $3, $5); }
+    : name '(' defargs ')' statement  { $$ = def(namen($1), $3, $5); }
     ;
 
 defargs
@@ -63,16 +64,19 @@ defargs
     ;
 
 statements
-    : statement             { $$ = list($1); };
-    | statement statements  { $$ = listfront($2, $1); };
+    : statement                 { $$ = list($1); }
+    | statement statements      { $$ = listfront($2, $1); }
     ;
 
 statement
-    : extrn name ';'              { $$ = decl(externn($2), NULL); }  /* TODO: list */
-    | autoo name ';'              { $$ = decl(auton($2), NULL); };     /* TODO: list */
-    | autoo name constant ';'     { $$ = decl(auton($2), $3); };       /* TODO: list */
-    | '{' statements '}'          { $$ = $2; }
-    | rvalue ';'                  { $$ = $1; }
+    : extrn name ';'             { $$ = decl(externn($2), NULL); }    /* TODO: list */
+    | autoo name ';'             { $$ = decl(auton($2), NULL); };     /* TODO: list */
+    | autoo name constant ';'    { $$ = decl(auton($2), $3); };       /* TODO: list */
+    | '{' statements '}'         { $$ = $2; }
+    | returnn ';'                { $$ = returnnn(NULL); }
+    | returnn '(' rvalue ')' ';' { $$ = returnnn($3); }
+    | rvalue ';'                 { $$ = $1; }
+    | ';'                        { $$ = empty(); }
     ;
 
 rvalue

@@ -40,7 +40,7 @@ word strtochar(const char *s);
  /* "switch"        { return T_SWITCH; } */
  /* "case"          { return T_CASE; } */
  /* "goto"          { return T_GOTO; } */
- /* "return"        { return T_RETURN; } */
+"return"            { return returnn; }
 
 [A-Za-z_]+      { yylval.s = strdup(yytext); return name; }
 \(              { return '('; }

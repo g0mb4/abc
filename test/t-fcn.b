@@ -1,0 +1,13 @@
+add(a,b) {
+    return(a + b);
+}
+
+main() {
+    extrn putchar;
+    extrn add;
+    auto c;
+
+    c = add('a' + 1);
+    /*putchar(add('a' + 2));*/
+    putchar('*n');
+}

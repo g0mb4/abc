@@ -24,6 +24,7 @@ enum {
     N_AUTO,
     N_ASSIGN,
     N_BINARY,
+    N_RETURN,
 };
 
 struct node {
@@ -112,6 +113,13 @@ struct binary_node {
     struct node *right;
 };
 
+struct return_node {
+    int type;
+    int id;
+    
+    struct node *val;
+};
+
 struct node *empty(void);
 
 struct node *string(const char *s);
@@ -132,7 +140,6 @@ struct node *auton(const char *s);
 struct node *assignn(struct node *l, struct node *r);
 struct node *binaryn(int op, struct node *l, struct node *r);
 
-void print(struct node *n, int indent);
-
+struct node *returnnn(struct node *v);
 
 #endif /* AST_H */

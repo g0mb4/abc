@@ -10,6 +10,7 @@ tests=(
     t-auto
     t-char
     t-arith
+    t-fcn
 )
 
 passed=0
