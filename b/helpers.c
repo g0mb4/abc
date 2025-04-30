@@ -27,6 +27,34 @@ struct node *finddecl(struct node *dlist, struct node *name)
     return NULL;
 }
 
+struct node *listback(struct node *l, struct node *n)
+{
+    if (!l)
+        return list(n);
+
+    assert(l->type == N_LIST);
+    struct list_node *curr = (struct list_node*)l;
+
+    while (curr->next) {
+        curr = curr->next;
+    }
+
+    curr->next = (struct list_node*)list(n);
+    return l;
+}
+
+struct node *listfront(struct node *l, struct node *n)
+{
+    if (!l)
+        return list(n);
+
+    assert(l->type == N_LIST);
+
+    struct list_node *new = (struct list_node*)list(n);
+    new->next = (struct list_node*)l;
+
+    return (struct node*)new;
+}
 
 void printlist(struct node *n, int indent)
 {
