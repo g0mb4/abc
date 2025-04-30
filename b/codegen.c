@@ -13,6 +13,7 @@ static int data_ctr;
 
 static struct node *decls = NULL;
 word stack = 0;
+int funcid = -1;
 
 static void gen(struct node *n);
 
@@ -94,6 +95,8 @@ static void gendef(struct node *n)
     fprintf(out, "\tpushq %%rbp\n");
     fprintf(out, "\tmovq %%rsp, %%rbp\n");
 
+    funcid = n->id;
+
     decls = def->decls;
     gendecl();
     genargs(def->args);
@@ -101,12 +104,14 @@ static void gendef(struct node *n)
     gen(def->body);
 
     // epilog
-    fprintf(out, "label:\n");
+    fprintf(out, "end_%d:\n", funcid);
     fprintf(out, "\taddq $%llu, %%rsp\n", stack);
     fprintf(out, "\tpopq %%rbp\n");
     fprintf(out, "\tret\n");
+    fprintf(out, "\n");
 
     stack = 0;
+    funcid = -1;
 }
 
 static void genlist(struct node *n)
@@ -248,12 +253,14 @@ static void genreturn(struct node *n)
     assert(n);
     assert(n->type == N_RETURN);
 
+    assert(funcid != -1);
+
     struct return_node *ret = (struct return_node *)n;
 
     if (ret->val)
         gen(ret->val);
 
-    fprintf(out, "\tjmp label\n");
+    fprintf(out, "\tjmp end_%d\n", funcid);
 }
 
 static void gen(struct node *n)

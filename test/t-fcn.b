@@ -7,7 +7,8 @@ main() {
     extrn add;
     auto c;
 
-    c = add('a' + 1);
+    c = add('a', 1);
+    putchar(c);
     /*putchar(add('a' + 2));*/
     putchar('*n');
 }
