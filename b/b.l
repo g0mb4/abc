@@ -10,6 +10,7 @@ char *strdupquotes(const char * s);
 int escape(char c);
 
 word strtoword(const char *s);
+word strtochar(const char *s);
 
 %} /* end of the user defined code */
 
@@ -34,8 +35,9 @@ NUM     {DIGIT}+
 <COMMENT>"*/"           { BEGIN(INITIAL); }
 <COMMENT>.              { }
 
-\"(\\.|[^"\\])*\"       { yylval.s = strdupquotes(yytext); return str; }
-{NUM}                   { yylval.w = strtoword(yytext); return number; }
+\"(\\.|[^"\\])*\"        { yylval.s = strdupquotes(yytext); return str; }
+[\'][a-zA-Z0-9*()']+[\'] { yylval.w = strtochar(yytext); return number; }
+{NUM}                    { yylval.w = strtoword(yytext); return number; }
 
 "auto"          { return autoo; }
 "extrn"         { return extrn; }
@@ -97,6 +99,30 @@ int escape(char c)
     }
 }
 
+int escapeval(char c)
+{
+    switch (c) {
+    case '0':
+        return '\0';
+    case 't':
+        return '\t';
+    case 'n':
+        return '\n';
+    case '(':
+        return '{';
+    case ')':
+        return '}';
+    case 'e':
+        return '\0';
+    case '*':
+    case '\'':
+    case '"':
+        return c;
+    default:
+        return -1;
+    }
+}
+
 char *strdupquotes(const char * s)
 {
     int i, j = 0, len;
@@ -134,4 +160,32 @@ char *strdupquotes(const char * s)
     dest[j] = '\0';
 
     return dest;
+}
+
+word strtochar(const char *s)
+{
+    int i, j, len, esc;
+    word w = 0;
+
+    len = strlen(s);
+    if (len <= 2 || len > WORD_SIZE * 2){
+        yyerror("invalid character literal: %s", s);
+        return -1;
+    }
+
+    for (i = 1, j = 0; i < len-1; ++i, ++j) {
+        if (s[i] == '*') {
+            esc = escapeval(s[i+1]);
+            if (esc > 0) {
+                w |= ((char)esc << (j * 8));
+                i++;
+            } else {
+                yyerror("invalid escape sequence in: %s", s);
+            }
+        } else {
+            w |= (s[i] << (j * 8));
+        }
+    }
+
+    return w;
 }

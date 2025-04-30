@@ -8,6 +8,7 @@ export LIBBPATH="../libb/"
 tests=(
     t-hw
     t-auto
+    t-char
 )
 
 passed=0
