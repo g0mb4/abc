@@ -14,3 +14,12 @@ as -o b.out.o b.out.s
 ld -o hw libb/brt1.o b.out.o libb/libb1.o
 ./hw
 ```
+
+## Tests
+
+```bash
+make check
+```
+
+If you want to add a new test, modify *test/test.sh*s `tests` list, then
+`./test.sh gen`.
