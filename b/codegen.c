@@ -191,6 +191,9 @@ static void gencall(struct node *n)
             } else if (arg->type == N_BINARY) {
                 genbinary(arg);
                 fprintf(out, "\tmovq %%rax, %s\n", argreg(argindex));
+            } else if (arg->type == N_CALL) {
+                gencall(arg);
+                fprintf(out, "\tmovq %%rax, %s\n", argreg(argindex));
             } else {
                 assert(0);
             }
@@ -229,23 +232,21 @@ static void genassign(struct node *n)
     struct node *left = finddecl(decls, a->left);
     assert(left);
 
-    if (a->right->type == N_INT) {
+    if (a->right->type == N_INT)
         fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(a->right)->val);
-    } else if (a->right->type == N_BINARY) {
+    else if (a->right->type == N_BINARY)
         genbinary(a->right);
-    } else if (a->right->type == N_CALL) {
+    else if (a->right->type == N_CALL)
         gencall(a->right);
-    } else {
+    else
         assert(0);
-    }
 
-    if (left->type == N_AUTO) {
+    if (left->type == N_AUTO)
         fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(left)->offset);
-    } else if (left->type == N_EXTERN) {
+    else if (left->type == N_EXTERN)
         fprintf(out, "\tmovq %%rax, %s\n", ASEXTERN(left)->val);
-    } else {
+    else
         assert(0);
-    }
 }
 
 static void genreturn(struct node *n)

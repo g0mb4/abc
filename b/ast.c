@@ -168,13 +168,8 @@ struct node *call(struct node *name, struct node *args)
 struct node *def(struct node *name, struct node *args, struct node *body)
 {
     assert(name);
-    assert(name->type == N_NAME);
     assert(body);
-    assert(body->type == N_LIST);
 
-    if (args)
-        assert(args->type == N_LIST);
-    
     struct def_node *n;
     n = malloc(sizeof(*n));
     assert(n);
@@ -183,9 +178,18 @@ struct node *def(struct node *name, struct node *args, struct node *body)
     n->type = N_DEF;
     n->id = id++;
 
+    assert(name->type == N_NAME);
     n->name = name;
+
+    if (args)
+        assert(args->type == N_LIST);
     n->args = args;
-    n->body = body;
+
+    if (body->type == N_LIST)
+        n->body = body;
+    else
+        n->body = list(body);
+
     n->decls = decls;
 
     decls = NULL;
