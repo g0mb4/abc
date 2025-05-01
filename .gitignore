@@ -1,5 +1,6 @@
 *.o
 *.tmp
+*.a
 b.tab*
 *lex.yy.c
 b/b

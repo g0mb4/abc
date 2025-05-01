@@ -145,9 +145,12 @@ struct node *call(struct node *name, struct node *args)
     assert(name);
     assert(name->type == N_NAME);
 
+    /* TODO: this prevents recursion */
+#if 0
     struct node *def = finddecl(decls, name);
     if (!def || def->type != N_EXTERN)
-        yyerror("unknown extern funcion `%s`", ASNAME(name)->val);
+        yyerror("unknown extrn funcion `%s`", ASNAME(name)->val);
+#endif
 
     if (args)
         assert(args->type == N_LIST);

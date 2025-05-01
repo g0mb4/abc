@@ -80,7 +80,7 @@ static void printdef(struct node *f, int indent)
     assert(f);
     assert(f->type == N_DEF);
 
-    printf("%*sDEF(%d):\n", indent+1, "", f->id);
+    printf("%*sDEF(%d) begin:\n", indent+1, "", f->id);
     struct def_node *func = (struct def_node*)f;
     printf("%*sNAME: ", indent+1, ""); 
     print(func->name, indent + 2);
@@ -90,6 +90,7 @@ static void printdef(struct node *f, int indent)
     printlist(func->decls, indent + 2);
     printf("%*sBODY:", indent+1, ""); 
     printlist(func->body, indent + 2);
+    printf("%*sDEF(%d) end:\n", indent+1, "", f->id);
 }
 
 static void printcall(struct node *n, int indent)
@@ -160,7 +161,9 @@ static void printif(struct node *n, int indent)
     assert(iff->cond);
     assert(iff->truee);
 
-    printf("%*sIF(%d)\n", indent, "", iff->id);
+    printf("%*sIF(%d) begin:\n", indent, "", iff->id);
+    printf("%*COND:\n", indent, "");
+    print(iff->cond, indent + 2);
     printf("%*sTRUE:\n", indent, "");
     print(iff->truee, indent + 2);
 
@@ -168,8 +171,8 @@ static void printif(struct node *n, int indent)
         printf("%*sFALSE:\n", indent, "");
         print(iff->falsee, indent + 2);
     }
-    
-    printf("%*sENDIF(%d)\n", indent, "", iff->id);
+
+    printf("%*sIF(%d) end\n", indent, "", iff->id);
 }
 
 void print(struct node *n, int indent)

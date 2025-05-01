@@ -20,7 +20,7 @@ total=0
 compile () {
     ${BPATH}b $1 > /dev/null 2>&1
     as -o b.out.o b.out.s
-    ld ${LIBBPATH}/brt1.o b.out.o ${LIBBPATH}/libb1.o
+    ld ${LIBBPATH}/brt1.o b.out.o ${LIBBPATH}/libb.a
     rm b.out.s
 }
 
