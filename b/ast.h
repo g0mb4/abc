@@ -26,6 +26,7 @@ enum {
     N_BINARY,
     N_RETURN,
     N_IF,
+    N_WHILE,
 };
 
 struct node {
@@ -130,6 +131,14 @@ struct if_node {
     struct node *falsee;
 };
 
+struct while_node {
+    int type;
+    int id;
+    
+    struct node *cond;
+    struct node *body;
+};
+
 struct node *empty(void);
 
 struct node *string(const char *s);
@@ -152,5 +161,6 @@ struct node *binaryn(int op, struct node *l, struct node *r);
 
 struct node *returnnn(struct node *v);
 struct node *ifn(struct node *c, struct node *t, struct node *f);
+struct node *whilen(struct node *c, struct node *b);
 
 #endif /* AST_H */

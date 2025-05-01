@@ -12,6 +12,7 @@ tests=(
     t-arith
     t-fcn
     t-if
+    t-while
 )
 
 passed=0

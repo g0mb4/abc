@@ -162,7 +162,7 @@ static void printif(struct node *n, int indent)
     assert(iff->truee);
 
     printf("%*sIF(%d) begin:\n", indent, "", iff->id);
-    printf("%*COND:\n", indent, "");
+    printf("%*sCOND:\n", indent, "");
     print(iff->cond, indent + 2);
     printf("%*sTRUE:\n", indent, "");
     print(iff->truee, indent + 2);
@@ -173,6 +173,25 @@ static void printif(struct node *n, int indent)
     }
 
     printf("%*sIF(%d) end\n", indent, "", iff->id);
+}
+
+static void printwhile(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_WHILE);
+
+    struct while_node *w = (struct while_node*)n;
+
+    assert(w->cond);
+    assert(w->body);
+
+    printf("%*sWHILE(%d) begin:\n", indent, "", w->id);
+    printf("%*sCOND:\n", indent, "");
+    print(w->cond, indent + 2);
+    printf("%*sBODY:\n", indent, "");
+    print(w->body, indent + 2);
+
+    printf("%*sWHILE(%d) end\n", indent, "", w->id);
 }
 
 void print(struct node *n, int indent)
@@ -222,6 +241,9 @@ void print(struct node *n, int indent)
         break;
     case N_IF:
         printif(n, indent);
+        break;
+    case N_WHILE:
+        printwhile(n, indent);
         break;
     default:
         printf("unknown type: %d\n", n->type);

@@ -28,6 +28,7 @@ extern int yylineno;                    /* global variable for error riport */
 %token returnn
 %token iff
 %token elsee
+%token whilee
 
 %token <w>'+'
 %token <w>'-'
@@ -77,6 +78,7 @@ statement
     | autoo name constant ';'       { $$ = decl(auton($2), $3); };       /* TODO: list */
     | iff '(' rvalue ')' statement { $$ = ifn($3, $5, NULL); }
     | iff '(' rvalue ')' statement elsee statement { $$ = ifn($3, $5, $7); }
+    | whilee '(' rvalue ')' statement { $$ = whilen($3, $5); }
     | '{' statements '}'            { $$ = $2; }
     | returnn ';'                   { $$ = returnnn(NULL); }
     | returnn '(' rvalue ')' ';'    { $$ = returnnn($3); }

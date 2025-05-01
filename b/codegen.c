@@ -295,6 +295,25 @@ static void genif(struct node *n)
     }
 }
 
+static void genwhile(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_WHILE);
+
+    struct while_node *w = (struct while_node *)n;
+
+    assert(w->cond);
+    assert(w->body);
+
+    fprintf(out, "while_%d_start:\n", w->id);
+    gen(w->cond);
+    fprintf(out, "\tcmpq $0, %%rax\n");
+    fprintf(out, "\tje while_%d_end\n", w->id);
+    gen(w->body);
+    fprintf(out, "\tjmp while_%d_start\n", w->id);
+    fprintf(out, "while_%d_end:\n", w->id);
+}
+
 static void gen(struct node *n)
 {
     assert(n);
@@ -337,6 +356,9 @@ static void gen(struct node *n)
         break;
     case N_IF:
         genif(n);
+        break;
+    case N_WHILE:
+        genwhile(n);
         break;
     default:
         assert(0);

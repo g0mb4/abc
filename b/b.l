@@ -27,17 +27,18 @@ word strtochar(const char *s);
 
 "/*"                    { BEGIN(COMMENT); }
 <COMMENT>"*/"           { BEGIN(INITIAL); }
+<COMMENT>\n             { yylineno++; }
 <COMMENT>.              { }
 
 \"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return str; }
 [\'][A-Za-z0-9_*()']+[\']   { yylval.w = strtochar(yytext); return number; }
-[-]?[0-9]+                  { yylval.w = strtoword(yytext); return number; }
+[0-9]+                      { yylval.w = strtoword(yytext); return number; }
 
 "auto"              { return autoo; }
 "extrn"             { return extrn; }
 "if"                { return iff; }
 "else"              { return elsee; }
- /* "while"         { return T_WHILE; } */
+"while"             { return whilee; }
  /* "switch"        { return T_SWITCH; } */
  /* "case"          { return T_CASE; } */
  /* "goto"          { return T_GOTO; } */

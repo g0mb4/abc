@@ -248,3 +248,19 @@ struct node *ifn(struct node *c, struct node *t, struct node *f)
 
     return (struct node*)n;
 }
+
+struct node *whilen(struct node *c, struct node *b)
+{
+    struct while_node *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_WHILE;
+    n->id = id++;
+
+    n->cond = c;
+    n->body = b;
+
+    return (struct node*)n;
+}
