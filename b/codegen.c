@@ -269,6 +269,32 @@ static void genreturn(struct node *n)
     fprintf(out, "\tjmp end_%d\n", funcid);
 }
 
+static void genif(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_IF);
+
+    struct if_node *iff = (struct if_node *)n;
+
+    assert(iff->cond);
+    assert(iff->truee);
+
+    gen(iff->cond);
+    fprintf(out, "\tcmpq $0, %%rax\n");
+    if (iff->falsee) {
+        fprintf(out, "\tje if_%d_false\n", iff->id);
+        gen(iff->truee);
+        fprintf(out, "\tjmp if_%d_end\n", iff->id);
+        fprintf(out, "if_%d_false:\n", iff->id);
+        gen(iff->falsee);
+        fprintf(out, "if_%d_end:\n", iff->id);
+    } else {
+        fprintf(out, "\tje if_%d_end\n", iff->id);
+        gen(iff->truee);
+        fprintf(out, "if_%d_end:\n", iff->id);
+    }
+}
+
 static void gen(struct node *n)
 {
     assert(n);
@@ -308,6 +334,9 @@ static void gen(struct node *n)
         break;
     case N_RETURN:
         genreturn(n);
+        break;
+    case N_IF:
+        genif(n);
         break;
     default:
         assert(0);

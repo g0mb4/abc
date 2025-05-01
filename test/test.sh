@@ -11,6 +11,7 @@ tests=(
     t-char
     t-arith
     t-fcn
+    t-if
 )
 
 passed=0

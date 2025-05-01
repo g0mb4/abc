@@ -25,6 +25,7 @@ enum {
     N_ASSIGN,
     N_BINARY,
     N_RETURN,
+    N_IF,
 };
 
 struct node {
@@ -120,6 +121,15 @@ struct return_node {
     struct node *val;
 };
 
+struct if_node {
+    int type;
+    int id;
+    
+    struct node *cond;
+    struct node *truee;
+    struct node *falsee;
+};
+
 struct node *empty(void);
 
 struct node *string(const char *s);
@@ -141,5 +151,6 @@ struct node *assignn(struct node *l, struct node *r);
 struct node *binaryn(int op, struct node *l, struct node *r);
 
 struct node *returnnn(struct node *v);
+struct node *ifn(struct node *c, struct node *t, struct node *f);
 
 #endif /* AST_H */

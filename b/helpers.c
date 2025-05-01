@@ -150,6 +150,28 @@ static void printreturn(struct node *n, int indent)
         print(ret->val, indent);
 }
 
+static void printif(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_IF);
+
+    struct if_node *iff = (struct if_node*)n;
+
+    assert(iff->cond);
+    assert(iff->truee);
+
+    printf("%*sIF(%d)\n", indent, "", iff->id);
+    printf("%*sTRUE:\n", indent, "");
+    print(iff->truee, indent + 2);
+
+    if (iff->falsee){
+        printf("%*sFALSE:\n", indent, "");
+        print(iff->falsee, indent + 2);
+    }
+    
+    printf("%*sENDIF(%d)\n", indent, "", iff->id);
+}
+
 void print(struct node *n, int indent)
 {
     assert(n);
@@ -194,6 +216,9 @@ void print(struct node *n, int indent)
         break;
     case N_RETURN:
         printreturn(n, indent);
+        break;
+    case N_IF:
+        printif(n, indent);
         break;
     default:
         printf("unknown type: %d\n", n->type);

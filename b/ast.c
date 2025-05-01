@@ -228,3 +228,20 @@ struct node *returnnn(struct node *v)
 
     return (struct node*)n;
 }
+
+struct node *ifn(struct node *c, struct node *t, struct node *f)
+{
+    struct if_node *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_IF;
+    n->id = id++;
+
+    n->cond = c;
+    n->truee = t;
+    n->falsee = f;
+
+    return (struct node*)n;
+}

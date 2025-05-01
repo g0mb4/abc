@@ -35,7 +35,8 @@ word strtochar(const char *s);
 
 "auto"              { return autoo; }
 "extrn"             { return extrn; }
- /* "if"            { return T_IF; } */
+"if"                { return iff; }
+"else"              { return elsee; }
  /* "while"         { return T_WHILE; } */
  /* "switch"        { return T_SWITCH; } */
  /* "case"          { return T_CASE; } */
