@@ -135,24 +135,29 @@ static void genbinary(struct node *n)
     struct binary_node *b = (struct binary_node*)n;
 
     gen(b->right);  // value in %rax
-    fprintf(out, "\tmovq %%rax, %%rdx\n");
+    fprintf(out, "\tmovq %%rax, %%rbx\n");
     gen(b->left);   // value in %rax
    
     switch(b->op) {
     case '+':
-        fprintf(out, "\taddq %%rdx, %%rax\n");
+        fprintf(out, "\taddq %%rbx, %%rax\n");
         break;
     case '-':
-        fprintf(out, "\tsubq %%rdx, %%rax\n");
+        fprintf(out, "\tsubq %%rbx, %%rax\n");
         break;
     case '*':
-        fprintf(out, "\timulq %%rdx, %%rax\n");
+        fprintf(out, "\timulq %%rbx, %%rax\n");
         break;
     case '/':
-        fprintf(out, "\tmovq %%rdx, %%rcx\n");
         fprintf(out, "\tmovq $0, %%rdx\n");
         fprintf(out, "\tcqto\n");
-        fprintf(out, "\tidivq %%rcx\n");
+        fprintf(out, "\tidivq %%rbx\n");
+        break;
+    case '%':
+        fprintf(out, "\tmovq $0, %%rdx\n");
+        fprintf(out, "\tcqto\n");
+        fprintf(out, "\tidivq %%rbx\n");
+        fprintf(out, "\tmovq %%rdx, %%rax\n");
         break;
     default:
         assert(0);

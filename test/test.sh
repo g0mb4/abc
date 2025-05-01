@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -x
+#set -ex
 
 export BPATH="../b/"
 export LIBBPATH="../libb/"
@@ -27,6 +27,7 @@ test () {
     echo -n "[TEST] $1 "
     compile $1.b
     ./a.out > $1.stdout
+    rm ./a.out
 
     cmp --silent $1.stdout $1.expected
     if [ $? -eq 0 ]; then
@@ -43,6 +44,7 @@ gen () {
     echo "[GEN] $1"
     compile $1.b
     ./a.out > $1.expected
+    rm ./a.out
 }
 
 if [ "$#" -eq "0" ]; then

@@ -55,6 +55,7 @@ word strtochar(const char *s);
 \-              { yylval.w = '-'; return '-'; }
 \*              { yylval.w = '*'; return '*'; }
 \/              { yylval.w = '/'; return '/'; }
+\%              { yylval.w = '%'; return '%'; }
 
 =               { return '='; }
 

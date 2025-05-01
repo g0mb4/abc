@@ -31,10 +31,11 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>'-'
 %token <w>'*'
 %token <w>'/'
+%token <w>'%'
 
 /* precedence */
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 
 %type <w>binary
 
@@ -93,6 +94,7 @@ binary
     | '+'   { $$ = $1; };
     | '*'   { $$ = $1; };
     | '/'   { $$ = $1; };
+    | '%'   { $$ = $1; };
     ;
 
 callargs

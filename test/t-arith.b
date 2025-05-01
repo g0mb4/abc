@@ -24,4 +24,9 @@ main() {
     c = 'b' / 2;
     putchar(c);
     putchar('*n');
+
+    c = 10 % 3;
+    c = c + '0';
+    putchar(c);
+    putchar('*n');
 }
