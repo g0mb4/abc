@@ -5,6 +5,11 @@ A B Compiler targeting `x86_64-linux` based on [Ken Thompson's manual](doc/kbman
 > [!WARNING]
 > Compiler is not fully implemented yet, maybe it will never will be.
 
+Working examples:
+- [x] 9.1 (almost)
+- [ ] 9.2
+- [ ] 9.3
+
 ## Quickstart
 
 ```bash
