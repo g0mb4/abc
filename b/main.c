@@ -48,7 +48,11 @@ int main(int argc, char ** argv) {
         return 1;
 
     fclose(in);
+#if 0
+    /* TODO: if it is active the program fails with: 
+       corrupted size vs. prev_size */
     fclose(out);
+#endif
 
     return 0;
 }

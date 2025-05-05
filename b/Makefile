@@ -1,5 +1,6 @@
 CC := gcc
-CFLAGS := -std=gnu99 -Wall -Wextra
+CFLAGS = -std=gnu99 -Wall -Wextra
+LDFLAGS =
 YFLAGS = 
 YYFLAGS = 
 
@@ -8,12 +9,13 @@ YYFLAGS =
 all: b
 
 debug: CFLAGS += -ggdb -DDEBUG
+debug: LDFLAGS += 
 debug: YFLAGS += --debug
 debug: YYFLAGS += --debug
 debug: b
 
 b: main.o ast.o codegen.o b.tab.o lex.yy.o helpers.o
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 b.tab.c b.tab.y: b.y
 	bison $(YFLAGS) -d $<
