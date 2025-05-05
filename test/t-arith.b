@@ -1,32 +1,47 @@
 main() {
     extrn putchar;
-    auto b 'b';
-    auto one 1;
+    extrn printn;
+    auto a;
+    auto b;
     auto c;
 
-    putchar('1'+1);
+    a = 2;
+    b = 3;
+
+    /* 5 */
+    c = b + a;
+    printn(c, 10);
     putchar('*n');
 
-    putchar(b+one);
-    putchar(b-one);
+    /* 1 */
+    c = b - a;
+    printn(c, 10);
+    putchar('*n');
+
+    /* 6 */
+    c = b * a;
+    printn(c, 10);
+    putchar('*n');
+
+    /* 3 */
+    c = 6 / a;
+    printn(c, 10);
     putchar('*n');
     
-    c = b + one;
-    putchar(c);
-
-    c = b - one;
-    putchar(c);
+    /* 2 */
+    c = 6 % 4;
+    printn(c, 10);
     putchar('*n');
 
-    c = '1' * 2;
-    putchar(c);
-
-    c = 'b' / 2;
-    putchar(c);
+    /* 7 */
+    printn(1+2*3, 10);
     putchar('*n');
 
-    c = 10 % 3;
-    c = c + '0';
-    putchar(c);
+    /* 9 */
+    printn((1+2)*3, 10);
+    putchar('*n');
+
+    /* 9 */
+    printn(3*(1+2), 10);
     putchar('*n');
 }

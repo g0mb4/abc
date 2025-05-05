@@ -8,13 +8,11 @@ printn(n,b) {
 	auto a;
 	auto c;
 
-	if(a=n/b)
-		printn(a, b);
+	if(a=n/b) /* assignment, not test for equality */
+		printn(a, b); /* recursive */
 
-    /* TODO: original code was: 
-        putchar(n%b + '0');
-    */
-	c = n%b;
-	c = c + '0';
-	putchar(c);
+	/* TODO: fix precedence, original code:
+		putchar(n%b + '0');
+	*/
+	putchar((n%b) + '0');
 }

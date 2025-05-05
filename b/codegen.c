@@ -135,8 +135,9 @@ static void genbinary(struct node *n)
     struct binary_node *b = (struct binary_node*)n;
 
     gen(b->right);  // value in %rax
-    fprintf(out, "\tmovq %%rax, %%rbx\n");
+    fprintf(out, "\tpushq %%rax\n");
     gen(b->left);   // value in %rax
+    fprintf(out, "\tpopq %%rbx\n");
    
     switch(b->op) {
     case '+':
