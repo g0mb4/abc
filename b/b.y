@@ -42,6 +42,7 @@ extern int yylineno;                    /* global variable for error riport */
 
 %type <w>binary
 
+%type <n>extrnlist
 %type <n>constant <n>lvalue <n>callargs <n>rvalue
 %type <n>defargs <n>statement <n>statements <n>definition <n>definitions
 %start program
@@ -73,7 +74,7 @@ statements
     ;
 
 statement
-    : extrn name ';'                { $$ = decl(externn($2), NULL); }    /* TODO: list */
+    : extrn extrnlist ';'           { $$ = $2; }
     | autoo name ';'                { $$ = decl(auton($2), NULL); };     /* TODO: list */
     | autoo name constant ';'       { $$ = decl(auton($2), $3); };       /* TODO: list */
     | iff '(' rvalue ')' statement { $$ = ifn($3, $5, NULL); }
@@ -84,6 +85,11 @@ statement
     | returnn '(' rvalue ')' ';'    { $$ = returnnn($3); }
     | rvalue ';'                    { $$ = $1; }
     | ';'                           { $$ = empty(); }
+    ;
+
+extrnlist
+    : name                      { $$ = list(decl(externn($1), NULL));          }
+    | name ',' extrnlist        { $$ = listfront($3, decl(externn($1), NULL)); }
     ;
 
 rvalue

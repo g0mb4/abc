@@ -1,6 +1,5 @@
 main() {
-    extrn printn;
-    extrn putchar;
+    extrn printn, putchar;
     auto cnt 5;
 
     while (cnt) {

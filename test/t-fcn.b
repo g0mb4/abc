@@ -5,9 +5,7 @@ add(a,b) {
 }
 
 main() {
-    extrn putchar;
-    extrn add;
-    extrn dummy;
+    extrn putchar, add, dummy;
     auto c;
 
     dummy();

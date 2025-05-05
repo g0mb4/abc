@@ -1,6 +1,5 @@
 main() {
-    extrn putchar;
-    extrn printn;
+    extrn putchar, printn;
     auto a;
     auto b;
     auto c;
