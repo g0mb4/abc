@@ -1,7 +1,6 @@
 main() {
     extrn putchar;
-    auto t 1;
-    auto f 0;
+    auto t 1, f 0;
 
     if (t)
         putchar('a');

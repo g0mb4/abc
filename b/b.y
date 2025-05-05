@@ -42,7 +42,7 @@ extern int yylineno;                    /* global variable for error riport */
 
 %type <w>binary
 
-%type <n>extrnlist
+%type <n>extrnlist <n>autolist
 %type <n>constant <n>lvalue <n>callargs <n>rvalue
 %type <n>defargs <n>statement <n>statements <n>definition <n>definitions
 %start program
@@ -75,9 +75,8 @@ statements
 
 statement
     : extrn extrnlist ';'           { $$ = $2; }
-    | autoo name ';'                { $$ = decl(auton($2), NULL); };     /* TODO: list */
-    | autoo name constant ';'       { $$ = decl(auton($2), $3); };       /* TODO: list */
-    | iff '(' rvalue ')' statement { $$ = ifn($3, $5, NULL); }
+    | autoo autolist ';'            { $$ = $2; };
+    | iff '(' rvalue ')' statement  { $$ = ifn($3, $5, NULL); }
     | iff '(' rvalue ')' statement elsee statement { $$ = ifn($3, $5, $7); }
     | whilee '(' rvalue ')' statement { $$ = whilen($3, $5); }
     | '{' statements '}'            { $$ = $2; }
@@ -90,6 +89,13 @@ statement
 extrnlist
     : name                      { $$ = list(decl(externn($1), NULL));          }
     | name ',' extrnlist        { $$ = listfront($3, decl(externn($1), NULL)); }
+    ;
+
+autolist
+    : name                          { $$ = list(decl(auton($1), NULL));  }
+    | name constant                 { $$ = list(decl(auton($1), $2));    } /* TODO: vector */
+    | name ',' autolist             { $$ = listfront($3, decl(auton($1), NULL)); }
+    | name constant ',' autolist    { $$ = listfront($4, decl(auton($1), $2)); }
     ;
 
 rvalue

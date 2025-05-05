@@ -1,7 +1,7 @@
 main() {
     extrn putchar;
-    auto a 97;
-    auto b;
+    auto a 97, b;
+
     b = 98;
 
     putchar(a);
