@@ -13,7 +13,7 @@ extern FILE *out;    /* from main.c */
 static const char *data[1024];
 static int data_ctr;
 
-static struct def_node *curr_def = NULL;
+static struct defnode *curr_def = NULL;
 
 static void gen(struct node *n);
 
@@ -33,25 +33,25 @@ static char *argreg(int index)
 
 static void gendecl(void)
 {
-    struct auto_node *a;
+    struct autonode *a;
 
     assert(curr_def);
 
     if (!curr_def->decls)
         return;
 
-    struct list_node *curr = ASLIST(curr_def->decls);
+    struct listnode *curr = ASLIST(curr_def->decls);
     while (curr) {
         assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
         if (curr->val->type == N_AUTO) {
             a = ASAUTO(curr->val);
-            curr_def->stack_size += WORD_SIZE;
-            ASAUTO(curr->val)->offset = curr_def->stack_size;   /* update the list element, not the copy */
+            curr_def->stacksize += WORD_SIZE;
+            ASAUTO(curr->val)->offset = curr_def->stacksize;   /* update the list element, not the copy */
             fprintf(out, "\tsubq $%lu, %%rsp\n", WORD_SIZE);
 
             if (a->init) {
                 assert(a->init->type == N_INT);
-                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, curr_def->stack_size);
+                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, curr_def->stacksize);
             }
         }
         curr = curr->next;
@@ -60,7 +60,7 @@ static void gendecl(void)
 
 static void genargs(struct node *n)
 {
-    struct auto_node *a;
+    struct autonode *a;
 
     assert(curr_def);
 
@@ -68,15 +68,15 @@ static void genargs(struct node *n)
         return;
 
     assert(n->type == N_LIST);
-    struct list_node *curr = ASLIST(n);
+    struct listnode *curr = ASLIST(n);
     int i = 0;
     while (curr) {
         assert(curr->val->type == N_NAME);
-        a = ASAUTO(auton(ASNAME(curr->val)->val));
-        curr_def->stack_size += WORD_SIZE;
-        a->offset = curr_def->stack_size;
+        a = ASAUTO(mkauto(ASNAME(curr->val)->val));
+        curr_def->stacksize += WORD_SIZE;
+        a->offset = curr_def->stacksize;
         fprintf(out, "\tsubq $%lu, %%rsp\n", WORD_SIZE);
-        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(i++), curr_def->stack_size);
+        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(i++), curr_def->stacksize);
 
         curr_def->decls = listback(curr_def->decls, ASNODE(a));
 
@@ -88,7 +88,7 @@ static void gendef(struct node *n)
 {
     assert(n->type == N_DEF);
 
-    struct def_node *def = (struct def_node*)n;
+    struct defnode *def = (struct defnode*)n;
 
     curr_def = def;
 
@@ -108,7 +108,7 @@ static void gendef(struct node *n)
 
     // epilog
     fprintf(out, "end_%d:\n", curr_def->id);
-    fprintf(out, "\taddq $%llu, %%rsp\n", curr_def->stack_size);
+    fprintf(out, "\taddq $%llu, %%rsp\n", curr_def->stacksize);
 
     fprintf(out, "\tpopq %%rbp\n");
     fprintf(out, "\tret\n");
@@ -123,7 +123,7 @@ static void genlist(struct node *n)
         return;
 
     assert(n->type == N_LIST);
-    struct list_node *curr = (struct list_node*)n;
+    struct listnode *curr = (struct listnode*)n;
     while (curr) {
         gen(curr->val);
         curr = curr->next;
@@ -135,7 +135,7 @@ static void genbinary(struct node *n)
     assert(n);
     assert(n->type == N_BINARY);
 
-    struct binary_node *b = (struct binary_node*)n;
+    struct binarynode *b = (struct binarynode*)n;
 
     gen(b->right);  // value in %rax
     fprintf(out, "\tpushq %%rax\n");
@@ -181,7 +181,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $0, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
-    case lessequal:
+    case LESSEQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjle le_%d\n", n->id);
         fprintf(out, "\tmovq $0, %%rax\n");
@@ -190,7 +190,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
-    case greaterequal:
+    case GREATEQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjge ge_%d\n", n->id);
         fprintf(out, "\tmovq $0, %%rax\n");
@@ -199,7 +199,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
-    case equal:
+    case EQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tje e_%d\n", n->id);
         fprintf(out, "\tmovq $0, %%rax\n");
@@ -208,7 +208,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
-    case notequal:
+    case NOTEQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjne ne_%d\n", n->id);
         fprintf(out, "\tmovq $0, %%rax\n");
@@ -230,11 +230,11 @@ static void gencall(struct node *n)
 
     char buffer[128];
 
-    struct call_node *call = (struct call_node*)n;
+    struct callnode *call = (struct callnode*)n;
 
     if (call->args)
     {
-        struct list_node *args = (struct list_node*)call->args;
+        struct listnode *args = (struct listnode*)call->args;
         argindex = 0;
         while (args) {
             struct node *arg = args->val;
@@ -266,7 +266,7 @@ static void gencall(struct node *n)
         }
     }
 
-    fprintf(out, "\tcall %s\n", ((struct name_node *)call->name)->val);
+    fprintf(out, "\tcall %s\n", ((struct namenode *)call->name)->val);
 }
 
 static void genname(struct node *n)
@@ -286,7 +286,7 @@ static void genassign(struct node *n)
     assert(n);
     assert(n->type == N_ASSIGN);
 
-    struct assign_node *a = (struct assign_node *)n;
+    struct assignnode *a = (struct assignnode *)n;
 
     assert(a->left);
     assert(a->left->type == N_NAME);
@@ -319,7 +319,7 @@ static void genreturn(struct node *n)
 
     assert(curr_def);
 
-    struct return_node *ret = (struct return_node *)n;
+    struct returnnode *ret = (struct returnnode *)n;
 
     if (ret->val)
         gen(ret->val);
@@ -332,7 +332,7 @@ static void genif(struct node *n)
     assert(n);
     assert(n->type == N_IF);
 
-    struct if_node *iff = (struct if_node *)n;
+    struct ifnode *iff = (struct ifnode *)n;
 
     assert(iff->cond);
     assert(iff->truee);
@@ -358,7 +358,7 @@ static void genwhile(struct node *n)
     assert(n);
     assert(n->type == N_WHILE);
 
-    struct while_node *w = (struct while_node *)n;
+    struct whilenode *w = (struct whilenode *)n;
 
     assert(w->cond);
     assert(w->body);

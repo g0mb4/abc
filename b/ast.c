@@ -11,7 +11,7 @@ static struct node *decls = NULL;
 
 extern void yyerror(const char * s, ...);
 
-struct node *empty(void)
+struct node *mkempty(void)
 {
     struct node *n;
     n = malloc(sizeof(*n));
@@ -24,9 +24,9 @@ struct node *empty(void)
     return n;
 }
 
-struct node *string(const char *s)
+struct node *mkstr(const char *s)
 {
-    struct string_node *n;
+    struct strnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -38,9 +38,9 @@ struct node *string(const char *s)
     return (struct node*)n;
 }
 
-struct node *integer(word w)
+struct node *mkint(word w)
 {
-    struct int_node *n;
+    struct intnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -52,9 +52,9 @@ struct node *integer(word w)
     return (struct node*)n;
 }
 
-struct node *namen(const char *s)
+struct node *mkname(const char *s)
 {
-    struct name_node *n;
+    struct namenode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -66,9 +66,9 @@ struct node *namen(const char *s)
     return (struct node*)n;
 }
 
-struct node *externn(const char *s)
+struct node *mkextrn(const char *s)
 {
-    struct name_node *n;
+    struct namenode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -80,9 +80,9 @@ struct node *externn(const char *s)
     return (struct node*)n;
 }
 
-struct node *auton(const char *s)
+struct node *mkauto(const char *s)
 {
-    struct name_node *n;
+    struct namenode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -94,9 +94,9 @@ struct node *auton(const char *s)
     return (struct node*)n;
 }
 
-struct node *assignn(struct node *l, struct node *r)
+struct node *mkassign(struct node *l, struct node *r)
 {
-    struct assign_node *n;
+    struct assignnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -114,9 +114,9 @@ struct node *assignn(struct node *l, struct node *r)
     return (struct node*)n;
 }
 
-struct node *list(struct node *e)
+struct node *mklist(struct node *e)
 {
-    struct list_node *n;
+    struct listnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -128,7 +128,7 @@ struct node *list(struct node *e)
     return (struct node*)n;
 }
 
-struct node *decl(struct node *n, struct node *i)
+struct node *mkdecl(struct node *n, struct node *i)
 {
     if (n->type == N_EXTERN)
         assert(i == NULL);
@@ -137,10 +137,10 @@ struct node *decl(struct node *n, struct node *i)
         ASAUTO(n)->init = i;
 
     decls = listback(decls, n);
-    return empty();
+    return mkempty();
 }
 
-struct node *call(struct node *name, struct node *args)
+struct node *mkcall(struct node *name, struct node *args)
 {
     assert(name);
     assert(name->type == N_NAME);
@@ -155,7 +155,7 @@ struct node *call(struct node *name, struct node *args)
     if (args)
         assert(args->type == N_LIST);
     
-    struct call_node *n;
+    struct callnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -168,12 +168,12 @@ struct node *call(struct node *name, struct node *args)
     return (struct node*)n;
 }
 
-struct node *def(struct node *name, struct node *args, struct node *body)
+struct node *mkdef(struct node *name, struct node *args, struct node *body)
 {
     assert(name);
     assert(body);
 
-    struct def_node *n;
+    struct defnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -191,7 +191,7 @@ struct node *def(struct node *name, struct node *args, struct node *body)
     if (body->type == N_LIST)
         n->body = body;
     else
-        n->body = list(body);
+        n->body = mklist(body);
 
     n->decls = decls;
 
@@ -200,9 +200,9 @@ struct node *def(struct node *name, struct node *args, struct node *body)
     return (struct node*)n;
 }
 
-struct node *binaryn(int op, struct node *l, struct node *r)
+struct node *mkbinary(int op, struct node *l, struct node *r)
 {
-    struct binary_node *n;
+    struct binarynode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -217,9 +217,9 @@ struct node *binaryn(int op, struct node *l, struct node *r)
     return (struct node*)n;
 }
 
-struct node *unarynn(int op, struct node *v, int pre)
+struct node *mkunary(int op, struct node *v, int pre)
 {
-    struct unary_node *n;
+    struct unarynode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -234,9 +234,9 @@ struct node *unarynn(int op, struct node *v, int pre)
     return (struct node*)n;
 }
 
-struct node *returnnn(struct node *v)
+struct node *mkreturn(struct node *v)
 {
-    struct return_node *n;
+    struct returnnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -249,9 +249,9 @@ struct node *returnnn(struct node *v)
     return (struct node*)n;
 }
 
-struct node *ifn(struct node *c, struct node *t, struct node *f)
+struct node *mkif(struct node *c, struct node *t, struct node *f)
 {
-    struct if_node *n;
+    struct ifnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
@@ -266,9 +266,9 @@ struct node *ifn(struct node *c, struct node *t, struct node *f)
     return (struct node*)n;
 }
 
-struct node *whilen(struct node *c, struct node *b)
+struct node *mkwhile(struct node *c, struct node *b)
 {
-    struct while_node *n;
+    struct whilenode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));

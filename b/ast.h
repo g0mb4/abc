@@ -2,12 +2,12 @@
 #define AST_H
 
 #define ASNODE(n) ((struct node *)n)
-#define ASSTR(n) ((struct string_node *)n)
-#define ASINT(n) ((struct int_node *)n)
-#define ASNAME(n) ((struct name_node *)n)
-#define ASLIST(n) ((struct list_node *)n)
-#define ASEXTERN(n) ((struct extern_node *)n)
-#define ASAUTO(n) ((struct auto_node *)n)
+#define ASSTR(n) ((struct strnode *)n)
+#define ASINT(n) ((struct intnode *)n)
+#define ASNAME(n) ((struct namenode *)n)
+#define ASLIST(n) ((struct listnode *)n)
+#define ASEXTERN(n) ((struct extrnnode *)n)
+#define ASAUTO(n) ((struct autonode *)n)
 
 typedef long long int word;
 #define WORD_SIZE   sizeof(word)
@@ -35,36 +35,36 @@ struct node {
     int id;
 };
 
-struct string_node {
+struct strnode {
     int type;
     int id;
     
     const char *val;
 };
 
-struct int_node {
+struct intnode {
     int type;
     int id;
 
     word val;
 };
 
-struct name_node {
+struct namenode {
     int type;
     int id;
     
     const char *val;
 };
 
-struct list_node {
+struct listnode {
     int type;
     int id;
 
     struct node *val;
-    struct list_node *next;
+    struct listnode *next;
 };
 
-struct call_node {
+struct callnode {
     int type;
     int id;
 
@@ -72,7 +72,7 @@ struct call_node {
     struct node *args;
 };
 
-struct def_node {
+struct defnode {
     int type;
     int id;
 
@@ -82,17 +82,17 @@ struct def_node {
     struct node *body;
 
     /* for codegen */
-    word stack_size;
+    word stacksize;
 };
 
-struct extern_node {
+struct extrnnode {
     int type;
     int id;
     
     const char *val;
 };
 
-struct auto_node {
+struct autonode {
     int type;
     int id;
     
@@ -103,7 +103,7 @@ struct auto_node {
     word offset;    
 };
 
-struct assign_node {
+struct assignnode {
     int type;
     int id;
     
@@ -111,7 +111,7 @@ struct assign_node {
     struct node *right;
 };
 
-struct unary_node {
+struct unarynode {
     int type;
     int id;
 
@@ -121,7 +121,7 @@ struct unary_node {
     int pre;
 };
 
-struct binary_node {
+struct binarynode {
     int type;
     int id;
 
@@ -131,14 +131,14 @@ struct binary_node {
     struct node *right;
 };
 
-struct return_node {
+struct returnnode {
     int type;
     int id;
     
     struct node *val;
 };
 
-struct if_node {
+struct ifnode {
     int type;
     int id;
     
@@ -147,7 +147,7 @@ struct if_node {
     struct node *falsee;
 };
 
-struct while_node {
+struct whilenode {
     int type;
     int id;
     
@@ -155,29 +155,29 @@ struct while_node {
     struct node *body;
 };
 
-struct node *empty(void);
+struct node *mkempty(void);
 
-struct node *string(const char *s);
-struct node *integer(word w);
-struct node *namen(const char *s);
+struct node *mkstr(const char *s);
+struct node *mkint(word w);
+struct node *mkname(const char *s);
 
-struct node *list(struct node *e);
+struct node *mklist(struct node *e);
 struct node *listback(struct node *l, struct node *n);
 struct node *listfront(struct node *l, struct node *n);
-struct node *decl(struct node *n, struct node *i);
+struct node *mkdecl(struct node *n, struct node *i);
 
-struct node *call(struct node *name, struct node *args);
-struct node *def(struct node *name, struct node *args, struct node *body);
+struct node *mkcall(struct node *name, struct node *args);
+struct node *mkdef(struct node *name, struct node *args, struct node *body);
 
-struct node *externn(const char *s);
-struct node *auton(const char *s);
+struct node *mkextrn(const char *s);
+struct node *mkauto(const char *s);
 
-struct node *assignn(struct node *l, struct node *r);
-struct node *binaryn(int op, struct node *l, struct node *r);
-struct node *unarynn(int op, struct node *v, int pre);
+struct node *mkassign(struct node *l, struct node *r);
+struct node *mkbinary(int op, struct node *l, struct node *r);
+struct node *mkunary(int op, struct node *v, int pre);
 
-struct node *returnnn(struct node *v);
-struct node *ifn(struct node *c, struct node *t, struct node *f);
-struct node *whilen(struct node *c, struct node *b);
+struct node *mkreturn(struct node *v);
+struct node *mkif(struct node *c, struct node *t, struct node *f);
+struct node *mkwhile(struct node *c, struct node *b);
 
 #endif /* AST_H */

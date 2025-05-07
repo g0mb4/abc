@@ -9,7 +9,7 @@
 struct node *finddecl(struct node *dlist, struct node *name)
 {
     assert(name);
-    struct list_node *curr = ASLIST(dlist);
+    struct listnode *curr = ASLIST(dlist);
 
     assert(name->type == N_NAME);
     const char *namestr = ASNAME(name)->val;
@@ -32,28 +32,28 @@ struct node *finddecl(struct node *dlist, struct node *name)
 struct node *listback(struct node *l, struct node *n)
 {
     if (!l)
-        return list(n);
+        return mklist(n);
 
     assert(l->type == N_LIST);
-    struct list_node *curr = (struct list_node*)l;
+    struct listnode *curr = (struct listnode*)l;
 
     while (curr->next) {
         curr = curr->next;
     }
 
-    curr->next = (struct list_node*)list(n);
+    curr->next = (struct listnode*)mklist(n);
     return l;
 }
 
 struct node *listfront(struct node *l, struct node *n)
 {
     if (!l)
-        return list(n);
+        return mklist(n);
 
     assert(l->type == N_LIST);
 
-    struct list_node *new = (struct list_node*)list(n);
-    new->next = (struct list_node*)l;
+    struct listnode *new = (struct listnode*)mklist(n);
+    new->next = (struct listnode*)l;
 
     return (struct node*)new;
 }
@@ -67,7 +67,7 @@ static void printlist(struct node *n, int indent)
 
     assert(n->type == N_LIST);
 
-    struct list_node *curr = (struct list_node*)n;
+    struct listnode *curr = (struct listnode*)n;
 
     printf("LIST(%d) begin: \n", n->id);
     while (curr) {
@@ -83,7 +83,7 @@ static void printdef(struct node *f, int indent)
     assert(f->type == N_DEF);
 
     printf("%*sDEF(%d) begin:\n", indent+1, "", f->id);
-    struct def_node *func = (struct def_node*)f;
+    struct defnode *func = (struct defnode*)f;
     printf("%*sNAME: ", indent+1, ""); 
     print(func->name, indent + 2);
     printf("%*sARGS: ", indent+1, ""); 
@@ -100,7 +100,7 @@ static void printcall(struct node *n, int indent)
     assert(n);
     assert(n->type == N_CALL);
 
-    struct def_node *f = (struct def_node*)n;
+    struct defnode *f = (struct defnode*)n;
 
     printf("%*sCALL(%d):\n", indent, "", n->id);
     printf("%*sNAME: ", indent+1, ""); 
@@ -114,7 +114,7 @@ static void printassign(struct node *n, int indent)
     assert(n);
     assert(n->type == N_ASSIGN);
 
-    struct assign_node *a = (struct assign_node*)n;
+    struct assignnode *a = (struct assignnode*)n;
 
     assert(a->left);
     assert(a->right);
@@ -131,7 +131,7 @@ static void printbinary(struct node *n, int indent)
     assert(n);
     assert(n->type == N_BINARY);
 
-    struct binary_node *b = (struct binary_node*)n;
+    struct binarynode *b = (struct binarynode*)n;
 
     printf("%*sBINARY(%d):\n", indent, "", b->id);
 
@@ -141,10 +141,10 @@ static void printbinary(struct node *n, int indent)
         const char *op = NULL;
 
         switch(b->op) {
-        case lessequal : op = "<="; break;
-        case greaterequal : op = ">="; break;
-        case equal : op = "=="; break;
-        case notequal : op = "!="; break;
+        case LESSEQU : op = "<="; break;
+        case GREATEQU : op = ">="; break;
+        case EQU : op = "=="; break;
+        case NOTEQU : op = "!="; break;
         default:
             assert(0);
         }
@@ -163,7 +163,7 @@ static void printreturn(struct node *n, int indent)
     assert(n);
     assert(n->type == N_RETURN);
 
-    struct return_node *ret = (struct return_node*)n;
+    struct returnnode *ret = (struct returnnode*)n;
 
     printf("%*sRETURN(%d)\n", indent, "", ret->id);
     if (ret->val)
@@ -175,7 +175,7 @@ static void printif(struct node *n, int indent)
     assert(n);
     assert(n->type == N_IF);
 
-    struct if_node *iff = (struct if_node*)n;
+    struct ifnode *iff = (struct ifnode*)n;
 
     assert(iff->cond);
     assert(iff->truee);
@@ -199,7 +199,7 @@ static void printwhile(struct node *n, int indent)
     assert(n);
     assert(n->type == N_WHILE);
 
-    struct while_node *w = (struct while_node*)n;
+    struct whilenode *w = (struct whilenode*)n;
 
     assert(w->cond);
     assert(w->body);
@@ -218,7 +218,7 @@ static void printunary(struct node *n, int indent)
     assert(n);
     assert(n->type == N_UNARY);
 
-    struct unary_node *u = (struct unary_node*)n;
+    struct unarynode *u = (struct unarynode*)n;
 
     printf("%*sUNARY(%d):\n", indent, "", u->id);
     if (u->op < 127) {
@@ -227,8 +227,8 @@ static void printunary(struct node *n, int indent)
         const char *op = NULL;
 
         switch(u->op) {
-        case inc : op = "++"; break;
-        case dec : op = "--"; break;
+        case INC : op = "++"; break;
+        case DEC : op = "--"; break;
         default:
             assert(0);
         }
@@ -295,7 +295,6 @@ void print(struct node *n, int indent)
         printunary(n, indent);
         break;
     default:
-        printf("unknown type: %d\n", n->type);
         assert(0);
     };
 }

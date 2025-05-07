@@ -30,29 +30,29 @@ word strtochar(const char *s);
 <COMMENT>\n             { yylineno++; }
 <COMMENT>.              { }
 
-\"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return str; }
-[\'][A-Za-z0-9_*()']+[\']   { yylval.w = strtochar(yytext); return number; }
-[0-9]+                      { yylval.w = strtoword(yytext); return number; }
+\"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return STR; }
+[\'][A-Za-z0-9_*()']+[\']   { yylval.w = strtochar(yytext); return INT; }
+[0-9]+                      { yylval.w = strtoword(yytext); return INT; }
 
-"auto"              { return autoo; }
-"extrn"             { return extrn; }
-"if"                { return iff; }
-"else"              { return elsee; }
-"while"             { return whilee; }
+"auto"              { return AUTO; }
+"extrn"             { return EXTRN; }
+"if"                { return IF; }
+"else"              { return ELSE; }
+"while"             { return WHILE; }
  /* "switch"        { return T_SWITCH; } */
  /* "case"          { return T_CASE; } */
  /* "goto"          { return T_GOTO; } */
-"return"            { return returnn; }
+"return"            { return RETURN; }
 
-[A-Za-z_]+      { yylval.s = strdup(yytext); return name; }
+[A-Za-z_]+      { yylval.s = strdup(yytext); return NAME; }
 
-"<="            { yylval.w = lessequal; return lessequal; }
-">="            { yylval.w = greaterequal; return greaterequal; }
-"=="            { yylval.w = equal; return equal; }
-"!="            { yylval.w = notequal; return notequal; }
+"<="            { yylval.w = LESSEQU; return LESSEQU; }
+">="            { yylval.w = GREATEQU; return GREATEQU; }
+"=="            { yylval.w = EQU; return EQU; }
+"!="            { yylval.w = NOTEQU; return NOTEQU; }
 
-"++"            { yylval.w = inc; return inc; }
-"--"            { yylval.w = dec; return dec; }
+"++"            { yylval.w = INC; return INC; }
+"--"            { yylval.w = DEC; return DEC; }
 
 \(              { return '('; }
 \)              { return ')'; }

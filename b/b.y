@@ -19,16 +19,16 @@ extern int yylineno;                    /* global variable for error riport */
 %define parse.error verbose
 
 %union { char *s; unsigned long long int w; struct node *n; }
-%token <w>number
-%token <s>str
-%token <s>name
+%token <w>INT
+%token <s>STR
+%token <s>NAME
 
-%token extrn
-%token autoo
-%token returnn
-%token iff
-%token elsee
-%token whilee
+%token EXTRN
+%token AUTO
+%token RETURN
+%token IF
+%token ELSE
+%token WHILE
 
 %token <w>'+'
 %token <w>'-'
@@ -37,122 +37,121 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>'%'
 %token <w>'<'
 %token <w>'>'
-%token <w>lessequal
-%token <w>greaterequal
-%token <w>equal
-%token <w>notequal
+%token <w>LESSEQU
+%token <w>GREATEQU
+%token <w>EQU
+%token <w>NOTEQU
 
-%token <w>inc
-%token <w>dec
+%token <w>INC
+%token <w>DEC
 
 /* precedence */
-%left equal notequal
-%left '<' '>' lessequal greaterequal
+%left EQU NOTEQU
+%left '<' '>' LESSEQU GREATEQU
 %left '+' '-'
 %left '*' '/' '%'
 
-%type <w>binary <w>inc-dec
-
-%type <n>extrnlist <n>autolist
-%type <n>constant <n>lvalue <n>callargs <n>rvalue
-%type <n>defargs <n>statement <n>statements <n>definition <n>definitions
-%start program
+%type <w>BINARY <w>INC-DEC
+%type <n>EXTRNLIST <n>AUTOLIST
+%type <n>CONSTANT <n>LVALUE <n>CALLIST <n>RVALUE
+%type <n>DEFLIST <n>STATEMENT <n>STATEMENTS <n>DEFINITION <n>DEFINITIONS
+%start PROGRAM
 
 %%
 
-program
-    : definitions   { codegen($1); }
+PROGRAM
+    : DEFINITIONS   { codegen($1); }
     ;
 
-definitions
+DEFINITIONS
     :                           { $$ = NULL; }
-    | definition definitions    { $$ = listfront($2, $1); }
+    | DEFINITION DEFINITIONS    { $$ = listfront($2, $1); }
     ;
 
-definition
-    : name '(' defargs ')' statement  { $$ = def(namen($1), $3, $5); }
+DEFINITION
+    : NAME '(' DEFLIST ')' STATEMENT  { $$ = mkdef(mkname($1), $3, $5); }
     ;
 
-defargs
+DEFLIST
     :                           { $$ = NULL; }
-    | name                      { $$ = list(namen($1)); }
-    | name ',' defargs          { $$ = listfront($3, namen($1)); }
+    | NAME                      { $$ = mklist(mkname($1)); }
+    | NAME ',' DEFLIST          { $$ = listfront($3, mkname($1)); }
     ;
 
-statements
-    : statement                 { $$ = list($1); }
-    | statement statements      { $$ = listfront($2, $1); }
+STATEMENTS
+    : STATEMENT                 { $$ = mklist($1); }
+    | STATEMENT STATEMENTS      { $$ = listfront($2, $1); }
     ;
 
-statement
-    : extrn extrnlist ';'           { $$ = $2; }
-    | autoo autolist ';'            { $$ = $2; };
-    | iff '(' rvalue ')' statement  { $$ = ifn($3, $5, NULL); }
-    | iff '(' rvalue ')' statement elsee statement { $$ = ifn($3, $5, $7); }
-    | whilee '(' rvalue ')' statement { $$ = whilen($3, $5); }
-    | '{' statements '}'            { $$ = $2; }
-    | returnn ';'                   { $$ = returnnn(NULL); }
-    | returnn '(' rvalue ')' ';'    { $$ = returnnn($3); }
-    | rvalue ';'                    { $$ = $1; }
-    | ';'                           { $$ = empty(); }
+STATEMENT
+    : EXTRN EXTRNLIST ';'                           { $$ = $2; }
+    | AUTO AUTOLIST ';'                             { $$ = $2; };
+    | IF '(' RVALUE ')' STATEMENT                   { $$ = mkif($3, $5, NULL); }
+    | IF '(' RVALUE ')' STATEMENT ELSE STATEMENT    { $$ = mkif($3, $5, $7); }
+    | WHILE '(' RVALUE ')' STATEMENT                { $$ = mkwhile($3, $5); }
+    | '{' STATEMENTS '}'                            { $$ = $2; }
+    | RETURN ';'                                    { $$ = mkreturn(NULL); }
+    | RETURN '(' RVALUE ')' ';'                     { $$ = mkreturn($3); }
+    | RVALUE ';'                                    { $$ = $1; }
+    | ';'                                           { $$ = mkempty(); }
     ;
 
-extrnlist
-    : name                      { $$ = list(decl(externn($1), NULL));          }
-    | name ',' extrnlist        { $$ = listfront($3, decl(externn($1), NULL)); }
+EXTRNLIST
+    : NAME                      { $$ = mklist(mkdecl(mkextrn($1), NULL));          }
+    | NAME ',' EXTRNLIST        { $$ = listfront($3, mkdecl(mkextrn($1), NULL)); }
     ;
 
-autolist
-    : name                          { $$ = list(decl(auton($1), NULL));  }
-    | name constant                 { $$ = list(decl(auton($1), $2));    } /* TODO: vector */
-    | name ',' autolist             { $$ = listfront($3, decl(auton($1), NULL)); }
-    | name constant ',' autolist    { $$ = listfront($4, decl(auton($1), $2)); }
+AUTOLIST
+    : NAME                          { $$ = mklist(mkdecl(mkauto($1), NULL));  }
+    | NAME CONSTANT                 { $$ = mklist(mkdecl(mkauto($1), $2));    } /* TODO: vector */
+    | NAME ',' AUTOLIST             { $$ = listfront($3, mkdecl(mkauto($1), NULL)); }
+    | NAME CONSTANT ',' AUTOLIST    { $$ = listfront($4, mkdecl(mkauto($1), $2)); }
     ;
 
-rvalue
-    : '(' rvalue ')'            { $$ = $2; };
-    | lvalue                    { $$ = $1; }
-    | constant                  { $$ = $1; }
-    | lvalue '=' rvalue         { $$ = assignn($1, $3); }
-    | inc-dec lvalue            { $$ = unarynn($1, $2, 1); }
-    | lvalue inc-dec            { $$ = unarynn($2, $1, 0); }
-    | rvalue binary rvalue      { $$ = binaryn($2, $1, $3); }
-    | rvalue '(' callargs ')'   { $$ = call($1, $3); }
+RVALUE
+    : '(' RVALUE ')'            { $$ = $2; };
+    | LVALUE                    { $$ = $1; }
+    | CONSTANT                  { $$ = $1; }
+    | LVALUE '=' RVALUE         { $$ = mkassign($1, $3); }
+    | INC-DEC LVALUE            { $$ = mkunary($1, $2, 1); }
+    | LVALUE INC-DEC            { $$ = mkunary($2, $1, 0); }
+    | RVALUE BINARY RVALUE      { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '(' CALLIST ')'    { $$ = mkcall($1, $3); }
     ;
 
-inc-dec
-    : inc   { $$ = $1; }
-    | dec   { $$ = $1; }
+INC-DEC
+    : INC   { $$ = $1; }
+    | DEC   { $$ = $1; }
     ;
 
-binary
-    : '-'   { $$ = $1; }
-    | '+'   { $$ = $1; }
-    | '*'   { $$ = $1; }
-    | '/'   { $$ = $1; }
-    | '%'   { $$ = $1; }
-    | '<'   { $$ = $1; }
-    | '>'   { $$ = $1; }
-    | lessequal         { $$ = $1; }
-    | greaterequal      { $$ = $1; }
-    | equal             { $$ = $1; }
-    | notequal          { $$ = $1; }
+BINARY
+    : '-'       { $$ = $1; }
+    | '+'       { $$ = $1; }
+    | '*'       { $$ = $1; }
+    | '/'       { $$ = $1; }
+    | '%'       { $$ = $1; }
+    | '<'       { $$ = $1; }
+    | '>'       { $$ = $1; }
+    | LESSEQU   { $$ = $1; }
+    | GREATEQU  { $$ = $1; }
+    | EQU       { $$ = $1; }
+    | NOTEQU    { $$ = $1; }
     ;
 
 
-callargs
-    :                          { $$ = NULL; }
-    | rvalue                   { $$ = list($1); }
-    | rvalue ',' callargs      { $$ = listfront($3, $1); }
+CALLIST
+    :                       { $$ = NULL; }
+    | RVALUE                { $$ = mklist($1); }
+    | RVALUE ',' CALLIST    { $$ = listfront($3, $1); }
     ;
 
-lvalue
-    : name                  { $$ = namen($1); }
+LVALUE
+    : NAME  { $$ = mkname($1); }
     ;
 
-constant
-    : number                { $$ = integer($1); }
-    | str                   { $$ = string($1); }
+CONSTANT
+    : INT   { $$ = mkint($1); }
+    | STR   { $$ = mkstr($1); }
     ;
 
 %%
