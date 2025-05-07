@@ -35,8 +35,16 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>'*'
 %token <w>'/'
 %token <w>'%'
+%token <w>'<'
+%token <w>'>'
+%token <w>lessequal
+%token <w>greaterequal
+%token <w>equal
+%token <w>notequal
 
 /* precedence */
+%left equal notequal
+%left '<' '>' lessequal greaterequal
 %left '+' '-'
 %left '*' '/' '%'
 
@@ -113,7 +121,14 @@ binary
     | '*'   { $$ = $1; };
     | '/'   { $$ = $1; };
     | '%'   { $$ = $1; };
+    | '<'   { $$ = $1; };
+    | '>'   { $$ = $1; };
+    | lessequal         { $$ = $1; };
+    | greaterequal      { $$ = $1; };
+    | equal             { $$ = $1; };
+    | notequal          { $$ = $1; };
     ;
+
 
 callargs
     :                          { $$ = NULL; }

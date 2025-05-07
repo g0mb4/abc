@@ -13,6 +13,7 @@ tests=(
     t-fcn
     t-if
     t-while
+    t-logic
 )
 
 passed=0

@@ -10,7 +10,7 @@
 #define ASAUTO(n) ((struct auto_node *)n)
 
 typedef long long int word;
-#define WORD_SIZE   8
+#define WORD_SIZE   sizeof(word)
 
 enum {
     N_EMPTY = 0,
@@ -79,6 +79,9 @@ struct def_node {
     struct node *args;
     struct node *decls;
     struct node *body;
+
+    /* for codegen */
+    word stack_size;
 };
 
 struct extern_node {
@@ -94,7 +97,9 @@ struct auto_node {
     
     const char *val;
     struct node *init;
-    word offset;    /* for codegen */
+
+    /* for codegen */
+    word offset;    
 };
 
 struct assign_node {
