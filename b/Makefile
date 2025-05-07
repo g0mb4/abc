@@ -14,14 +14,14 @@ debug: YFLAGS += --debug
 debug: YYFLAGS += --debug
 debug: b
 
-b: main.o ast.o codegen.o b.tab.o lex.yy.o helpers.o
+b: main.o ast.o b.tab.o lex.yy.o helpers.o codegen.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 b.tab.c b.tab.y: b.y
 	bison $(YFLAGS) -d $<
 
 lex.yy.c: b.l b.tab.h
-	flex $(YYFLAGS)  $<
+	flex $(YYFLAGS) $<
 
 clean:
 	find . -type f -name "b" -delete

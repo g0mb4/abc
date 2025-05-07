@@ -23,6 +23,7 @@ enum {
     N_EXTERN,
     N_AUTO,
     N_ASSIGN,
+    N_UNARY,
     N_BINARY,
     N_RETURN,
     N_IF,
@@ -110,6 +111,16 @@ struct assign_node {
     struct node *right;
 };
 
+struct unary_node {
+    int type;
+    int id;
+
+    int op;
+    
+    struct node *val;
+    int pre;
+};
+
 struct binary_node {
     int type;
     int id;
@@ -163,6 +174,7 @@ struct node *auton(const char *s);
 
 struct node *assignn(struct node *l, struct node *r);
 struct node *binaryn(int op, struct node *l, struct node *r);
+struct node *unarynn(int op, struct node *v, int pre);
 
 struct node *returnnn(struct node *v);
 struct node *ifn(struct node *c, struct node *t, struct node *f);

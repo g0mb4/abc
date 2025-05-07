@@ -42,13 +42,16 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>equal
 %token <w>notequal
 
+%token <w>inc
+%token <w>dec
+
 /* precedence */
 %left equal notequal
 %left '<' '>' lessequal greaterequal
 %left '+' '-'
 %left '*' '/' '%'
 
-%type <w>binary
+%type <w>binary <w>inc-dec
 
 %type <n>extrnlist <n>autolist
 %type <n>constant <n>lvalue <n>callargs <n>rvalue
@@ -111,22 +114,29 @@ rvalue
     | lvalue                    { $$ = $1; }
     | constant                  { $$ = $1; }
     | lvalue '=' rvalue         { $$ = assignn($1, $3); }
+    | inc-dec lvalue            { $$ = unarynn($1, $2, 1); }
+    | lvalue inc-dec            { $$ = unarynn($2, $1, 0); }
     | rvalue binary rvalue      { $$ = binaryn($2, $1, $3); }
     | rvalue '(' callargs ')'   { $$ = call($1, $3); }
     ;
 
+inc-dec
+    : inc   { $$ = $1; }
+    | dec   { $$ = $1; }
+    ;
+
 binary
-    : '-'   { $$ = $1; };
-    | '+'   { $$ = $1; };
-    | '*'   { $$ = $1; };
-    | '/'   { $$ = $1; };
-    | '%'   { $$ = $1; };
-    | '<'   { $$ = $1; };
-    | '>'   { $$ = $1; };
-    | lessequal         { $$ = $1; };
-    | greaterequal      { $$ = $1; };
-    | equal             { $$ = $1; };
-    | notequal          { $$ = $1; };
+    : '-'   { $$ = $1; }
+    | '+'   { $$ = $1; }
+    | '*'   { $$ = $1; }
+    | '/'   { $$ = $1; }
+    | '%'   { $$ = $1; }
+    | '<'   { $$ = $1; }
+    | '>'   { $$ = $1; }
+    | lessequal         { $$ = $1; }
+    | greaterequal      { $$ = $1; }
+    | equal             { $$ = $1; }
+    | notequal          { $$ = $1; }
     ;
 
 

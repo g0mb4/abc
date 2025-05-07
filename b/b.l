@@ -51,6 +51,9 @@ word strtochar(const char *s);
 "=="            { yylval.w = equal; return equal; }
 "!="            { yylval.w = notequal; return notequal; }
 
+"++"            { yylval.w = inc; return inc; }
+"--"            { yylval.w = dec; return dec; }
+
 \(              { return '('; }
 \)              { return ')'; }
 \{              { return '{'; }

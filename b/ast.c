@@ -217,6 +217,23 @@ struct node *binaryn(int op, struct node *l, struct node *r)
     return (struct node*)n;
 }
 
+struct node *unarynn(int op, struct node *v, int pre)
+{
+    struct unary_node *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_UNARY;
+    n->id = id++;
+
+    n->op = op;
+    n->val = v;
+    n->pre = pre;
+
+    return (struct node*)n;
+}
+
 struct node *returnnn(struct node *v)
 {
     struct return_node *n;

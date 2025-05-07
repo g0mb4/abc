@@ -213,6 +213,33 @@ static void printwhile(struct node *n, int indent)
     printf("%*sWHILE(%d) end\n", indent, "", w->id);
 }
 
+static void printunary(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_UNARY);
+
+    struct unary_node *u = (struct unary_node*)n;
+
+    printf("%*sUNARY(%d):\n", indent, "", u->id);
+    if (u->op < 127) {
+        printf("%*sOP: %c\n", indent, "", u->op);
+    } else {
+        const char *op = NULL;
+
+        switch(u->op) {
+        case inc : op = "++"; break;
+        case dec : op = "--"; break;
+        default:
+            assert(0);
+        }
+
+        printf("%*sOP: %s\n", indent, "", op);
+    }
+    printf("%*sPRE: %d\n", indent, "", u->pre);
+    printf("%*sVAL:\n", indent, "");
+    print(u->val, indent + 2);
+}
+
 void print(struct node *n, int indent)
 {
     assert(n);
@@ -263,6 +290,9 @@ void print(struct node *n, int indent)
         break;
     case N_WHILE:
         printwhile(n, indent);
+        break;
+    case N_UNARY:
+        printunary(n, indent);
         break;
     default:
         printf("unknown type: %d\n", n->type);
