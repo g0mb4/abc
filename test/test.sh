@@ -14,6 +14,7 @@ tests=(
     t-if
     t-while
     t-logic
+    t-inc-dec
 )
 
 passed=0

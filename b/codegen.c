@@ -11,9 +11,9 @@ extern FILE *out;    /* from main.c */
 
 // TODO: dynarr
 static const char *data[1024];
-static int data_ctr;
+static int datactr;
 
-static struct defnode *curr_def = NULL;
+static struct defnode *currdef = NULL;
 
 static void gen(struct node *n);
 
@@ -35,23 +35,23 @@ static void gendecl(void)
 {
     struct autonode *a;
 
-    assert(curr_def);
+    assert(currdef);
 
-    if (!curr_def->decls)
+    if (!currdef->decls)
         return;
 
-    struct listnode *curr = ASLIST(curr_def->decls);
+    struct listnode *curr = ASLIST(currdef->decls);
     while (curr) {
         assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
         if (curr->val->type == N_AUTO) {
             a = ASAUTO(curr->val);
-            curr_def->stacksize += WORD_SIZE;
-            ASAUTO(curr->val)->offset = curr_def->stacksize;   /* update the list element, not the copy */
+            currdef->stacksize += WORD_SIZE;
+            ASAUTO(curr->val)->offset = currdef->stacksize;   /* update the list element, not the copy */
             fprintf(out, "\tsubq $%lu, %%rsp\n", WORD_SIZE);
 
             if (a->init) {
                 assert(a->init->type == N_INT);
-                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, curr_def->stacksize);
+                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, currdef->stacksize);
             }
         }
         curr = curr->next;
@@ -62,7 +62,7 @@ static void genargs(struct node *n)
 {
     struct autonode *a;
 
-    assert(curr_def);
+    assert(currdef);
 
     if (!n)
         return;
@@ -73,12 +73,12 @@ static void genargs(struct node *n)
     while (curr) {
         assert(curr->val->type == N_NAME);
         a = ASAUTO(mkauto(ASNAME(curr->val)->val));
-        curr_def->stacksize += WORD_SIZE;
-        a->offset = curr_def->stacksize;
+        currdef->stacksize += WORD_SIZE;
+        a->offset = currdef->stacksize;
         fprintf(out, "\tsubq $%lu, %%rsp\n", WORD_SIZE);
-        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(i++), curr_def->stacksize);
+        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(i++), currdef->stacksize);
 
-        curr_def->decls = listback(curr_def->decls, ASNODE(a));
+        currdef->decls = listback(currdef->decls, ASNODE(a));
 
         curr = curr->next;
     }
@@ -90,7 +90,7 @@ static void gendef(struct node *n)
 
     struct defnode *def = (struct defnode*)n;
 
-    curr_def = def;
+    currdef = def;
 
     assert(def->body);
 
@@ -107,14 +107,14 @@ static void gendef(struct node *n)
     gen(def->body);
 
     // epilog
-    fprintf(out, "end_%d:\n", curr_def->id);
-    fprintf(out, "\taddq $%llu, %%rsp\n", curr_def->stacksize);
+    fprintf(out, "end_%d:\n", currdef->id);
+    fprintf(out, "\taddq $%llu, %%rsp\n", currdef->stacksize);
 
     fprintf(out, "\tpopq %%rbp\n");
     fprintf(out, "\tret\n");
     fprintf(out, "\n");
 
-    curr_def = NULL;
+    currdef = NULL;
 }
 
 static void genlist(struct node *n)
@@ -222,13 +222,84 @@ static void genbinary(struct node *n)
     }
 }
 
+static void genunary(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_UNARY);
+
+    struct unarynode *u = (struct unarynode*)n;
+    struct node *var;
+
+    switch(u->op) {
+    case INC:
+        assert(u->val->type == N_NAME);
+        var = finddecl(currdef->decls, u->val);
+        assert(var);
+
+        if (u->pre) {
+            if (var->type == N_AUTO) {
+                fprintf(out, "\taddq $1, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+            } else if (var->type == N_EXTERN) {
+                fprintf(out, "\taddq $1, %s\n", ASEXTERN(var)->val);
+                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+            } else {
+                assert(0);
+            }
+        } else {
+            if (var->type == N_AUTO) {
+                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                fprintf(out, "\tleaq 1(%%rax), %%rbx\n");
+                fprintf(out, "\tmovq %%rbx, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+            } else if (var->type == N_EXTERN) {
+                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                fprintf(out, "\tleaq 1(%%rax), %%rbx\n");
+                fprintf(out, "\tmovq %%rbx, %s\n", ASEXTERN(var)->val);
+            } else {
+                assert(0);
+            }
+        }
+
+        break;
+    case DEC:
+        assert(u->val->type == N_NAME);
+        var = finddecl(currdef->decls, u->val);
+        assert(var);
+
+        if (u->pre) {
+            if (var->type == N_AUTO) {
+                fprintf(out, "\tsubq $1, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+            } else if (var->type == N_EXTERN) {
+                fprintf(out, "\tsubq $1, %s\n", ASEXTERN(var)->val);
+                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+            } else {
+                assert(0);
+            }
+        } else {
+            if (var->type == N_AUTO) {
+                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                fprintf(out, "\tleaq -1(%%rax), %%rbx\n");
+                fprintf(out, "\tmovq %%rbx, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+            } else if (var->type == N_EXTERN) {
+                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                fprintf(out, "\tleaq -1(%%rax), %%rbx\n");
+                fprintf(out, "\tmovq %%rbx, %s\n", ASEXTERN(var)->val);
+            } else {
+                assert(0);
+            }
+        }
+        break;
+    default:
+        assert(0);
+    }
+}
+
 static void gencall(struct node *n)
 {
     int argindex; 
     assert(n);
     assert(n->type == N_CALL);
-
-    char buffer[128];
 
     struct callnode *call = (struct callnode*)n;
 
@@ -239,27 +310,8 @@ static void gencall(struct node *n)
         while (args) {
             struct node *arg = args->val;
 
-            if (arg->type == N_STRING) {
-                fprintf(out, "\tmovq $str_%d, %s\n", arg->id, argreg(argindex));
-                memset(buffer, 0, sizeof(buffer));
-                snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", arg->id, ASSTR(arg)->val);
-                data[data_ctr++] = strdup(buffer);
-            } else if (arg->type == N_INT) {
-                fprintf(out, "\tmovq $%llu, %s\n", ASINT(arg)->val, argreg(argindex));
-            } else if (arg->type == N_NAME) {
-                struct node *d = finddecl(curr_def->decls, ASNODE(arg));
-                assert(d);
-                assert(d->type == N_AUTO);
-                fprintf(out, "\tmovq -%llu(%%rbp), %s\n", ASAUTO(d)->offset, argreg(argindex));
-            } else if (arg->type == N_BINARY) {
-                genbinary(arg);
-                fprintf(out, "\tmovq %%rax, %s\n", argreg(argindex));
-            } else if (arg->type == N_CALL) {
-                gencall(arg);
-                fprintf(out, "\tmovq %%rax, %s\n", argreg(argindex));
-            } else {
-                assert(0);
-            }
+            gen(arg);
+            fprintf(out, "\tmovq %%rax, %s\n", argreg(argindex));
 
             args = args->next;
             argindex++;
@@ -274,7 +326,7 @@ static void genname(struct node *n)
     assert(n);
     assert(n->type == N_NAME);
 
-    struct node *var = finddecl(curr_def->decls, n);
+    struct node *var = finddecl(currdef->decls, n);
     assert(var);
 
     assert(var->type == N_AUTO || var->type == N_EXTERN);
@@ -292,7 +344,7 @@ static void genassign(struct node *n)
     assert(a->left->type == N_NAME);
     assert(a->right);
 
-    struct node *left = finddecl(curr_def->decls, a->left);
+    struct node *left = finddecl(currdef->decls, a->left);
     assert(left);
 
     if (a->right->type == N_INT)
@@ -317,14 +369,14 @@ static void genreturn(struct node *n)
     assert(n);
     assert(n->type == N_RETURN);
 
-    assert(curr_def);
+    assert(currdef);
 
     struct returnnode *ret = (struct returnnode *)n;
 
     if (ret->val)
         gen(ret->val);
 
-    fprintf(out, "\tjmp end_%d\n", curr_def->id);
+    fprintf(out, "\tjmp end_%d\n", currdef->id);
 }
 
 static void genif(struct node *n)
@@ -374,6 +426,8 @@ static void genwhile(struct node *n)
 
 static void gen(struct node *n)
 {
+    char buffer[128];
+
     assert(n);
     switch(n->type) {
     case N_EMPTY:
@@ -390,6 +444,12 @@ static void gen(struct node *n)
         break;
     case N_STRING:
         fprintf(out, "\tmovq $str_%d, %%rax\n", n->id);
+
+        /* TODO: don't add it multiple times */
+        memset(buffer, 0, sizeof(buffer));
+        snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", n->id, ASSTR(n)->val);
+        data[datactr++] = strdup(buffer);
+        
         break;
     case N_NAME:
         genname(n);
@@ -408,6 +468,9 @@ static void gen(struct node *n)
         break;
     case N_BINARY:
         genbinary(n);
+        break;
+    case N_UNARY:
+        genunary(n);
         break;
     case N_RETURN:
         genreturn(n);
@@ -433,7 +496,7 @@ void codegen(struct node* root)
     gen(root);
 
     fprintf(out, "\t.data\n");
-    for (int i = 0; i < data_ctr; ++i) {
+    for (int i = 0; i < datactr; ++i) {
         fprintf(out, "%s", data[i]);
     }
 }
