@@ -145,6 +145,8 @@ static void printbinary(struct node *n, int indent)
         case GREATEQU : op = ">="; break;
         case EQU : op = "=="; break;
         case NOTEQU : op = "!="; break;
+        case SHR : op = ">>"; break;
+        case SHL : op = "<<"; break;
         default:
             assert(0);
         }

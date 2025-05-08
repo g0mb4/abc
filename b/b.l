@@ -54,6 +54,9 @@ word strtochar(const char *s);
 "++"            { yylval.w = INC; return INC; }
 "--"            { yylval.w = DEC; return DEC; }
 
+">>"            { yylval.w = SHR; return SHR; }
+"<<"            { yylval.w = SHL; return SHL; }
+
 "("             { return '('; }
 ")"             { return ')'; }
 "{"             { return '{'; }

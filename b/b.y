@@ -44,6 +44,8 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>GREATEQU
 %token <w>EQU
 %token <w>NOTEQU
+%token <w>SHR
+%token <w>SHL
 
 %token <w>INC
 %token <w>DEC
@@ -53,6 +55,7 @@ extern int yylineno;                    /* global variable for error riport */
 %left '&'
 %left EQU NOTEQU
 %left '<' '>' LESSEQU GREATEQU
+%left SHL SHR
 %left '+' '-'
 %left '*' '/' '%'
 
@@ -144,6 +147,8 @@ BINARY
     | LESSEQU   { $$ = $1; }
     | '>'       { $$ = $1; }
     | GREATEQU  { $$ = $1; }
+    | SHL       { $$ = $1; }
+    | SHR       { $$ = $1; }
     | '-'       { $$ = $1; }
     | '+'       { $$ = $1; }
     | '%'       { $$ = $1; }

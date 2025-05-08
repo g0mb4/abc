@@ -223,6 +223,14 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
+    case SHR:
+        fprintf(out, "\tmovq %%rbx, %%rcx\n");
+        fprintf(out, "\tsarq %%cl, %%rax\n");
+        break;
+    case SHL:
+        fprintf(out, "\tmovq %%rbx, %%rcx\n");
+        fprintf(out, "\tsalq %%cl, %%rax\n");
+        break;
     default:
         assert(0);
     }
