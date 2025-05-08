@@ -49,6 +49,8 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>DEC
 
 /* precedence */
+%left '|'
+%left '&'
 %left EQU NOTEQU
 %left '<' '>' LESSEQU GREATEQU
 %left '+' '-'
