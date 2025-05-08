@@ -54,24 +54,27 @@ word strtochar(const char *s);
 "++"            { yylval.w = INC; return INC; }
 "--"            { yylval.w = DEC; return DEC; }
 
-\(              { return '('; }
-\)              { return ')'; }
-\{              { return '{'; }
-\}              { return '}'; }
+"("             { return '('; }
+")"             { return ')'; }
+"{"             { return '{'; }
+"}"             { return '}'; }
 
-;               { return ';'; }
-,               { return ','; }
+";"             { return ';'; }
+","             { return ','; }
 
-\+              { yylval.w = '+'; return '+'; }
-\-              { yylval.w = '-'; return '-'; }
-\*              { yylval.w = '*'; return '*'; }
-\/              { yylval.w = '/'; return '/'; }
-\%              { yylval.w = '%'; return '%'; }
+"+"             { yylval.w = '+'; return '+'; }
+"-"             { yylval.w = '-'; return '-'; }
+"*"             { yylval.w = '*'; return '*'; }
+"/"             { yylval.w = '/'; return '/'; }
+"%"             { yylval.w = '%'; return '%'; }
 
-\<              { yylval.w = '<'; return '<'; }
-\>              { yylval.w = '>'; return '>'; }
+"&"             { yylval.w = '&'; return '&'; }
+"|"             { yylval.w = '|'; return '|'; }
 
-=               { return '='; }
+"<"             { yylval.w = '<'; return '<'; }
+">"             { yylval.w = '>'; return '>'; }
+
+"="             { return '='; }
 
 \n              { } /* update yylineno */
 [ \t\r]+        { ; } /* ignore whitespace */

@@ -15,6 +15,7 @@ tests=(
     t-while
     t-logic
     t-inc-dec
+    t-bitwise
 )
 
 passed=0

@@ -163,6 +163,12 @@ static void genbinary(struct node *n)
         fprintf(out, "\tidivq %%rbx\n");
         fprintf(out, "\tmovq %%rdx, %%rax\n");
         break;
+     case '&':
+        fprintf(out, "\tandq %%rbx, %%rax\n");
+        break;
+    case '|':
+        fprintf(out, "\torq %%rbx, %%rax\n");
+        break;
     case '<':
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjge ge_%d\n", n->id);
