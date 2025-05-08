@@ -37,6 +37,7 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>'%'
 %token <w>'&'
 %token <w>'|'
+%token <w>'!'
 %token <w>'<'
 %token <w>'>'
 %token <w>LESSEQU
@@ -53,7 +54,7 @@ extern int yylineno;                    /* global variable for error riport */
 %left '+' '-'
 %left '*' '/' '%'
 
-%type <w>BINARY <w>INC-DEC
+%type <w>BINARY <w>INC-DEC <w>UNARY
 %type <n>EXTRNLIST <n>AUTOLIST
 %type <n>CONSTANT <n>LVALUE <n>CALLIST <n>RVALUE
 %type <n>DEFLIST <n>STATEMENT <n>STATEMENTS <n>DEFINITION <n>DEFINITIONS
@@ -117,6 +118,7 @@ RVALUE
     | LVALUE '=' RVALUE         { $$ = mkassign($1, $3); }
     | INC-DEC LVALUE            { $$ = mkunary($1, $2, 1); }
     | LVALUE INC-DEC            { $$ = mkunary($2, $1, 0); }
+    | UNARY RVALUE              { $$ = mkunary($1, $2, 0); }
     | RVALUE BINARY RVALUE      { $$ = mkbinary($2, $1, $3); }
     | RVALUE '(' CALLIST ')'    { $$ = mkcall($1, $3); }
     ;
@@ -124,6 +126,11 @@ RVALUE
 INC-DEC
     : INC   { $$ = $1; }
     | DEC   { $$ = $1; }
+    ;
+
+UNARY
+    : '-'   { $$ = $1; }
+    | '!'   { $$ = $1; }
     ;
 
 BINARY

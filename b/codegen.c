@@ -296,6 +296,20 @@ static void genunary(struct node *n)
             }
         }
         break;
+    case '-':
+        gen(u->val);
+        fprintf(out, "\tnegq %%rax\n");
+        break;
+    case '!':
+        gen(u->val);
+        fprintf(out, "\tcmpq $0, %%rax\n");
+        fprintf(out, "\tje zero_%d\n", u->id);
+        fprintf(out, "\tmovq $0, %%rax\n");
+        fprintf(out, "\tjmp end_%d\n", u->id);
+        fprintf(out, "\tzero_%d:\n", u->id);
+        fprintf(out, "\tmovq $1, %%rax\n");
+        fprintf(out, "\tend_%d:\n", u->id);
+        break;
     default:
         assert(0);
     }
@@ -357,6 +371,8 @@ static void genassign(struct node *n)
         fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(a->right)->val);
     else if (a->right->type == N_BINARY)
         genbinary(a->right);
+    else if (a->right->type == N_UNARY)
+        genunary(a->right);
     else if (a->right->type == N_CALL)
         gencall(a->right);
     else

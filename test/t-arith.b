@@ -41,4 +41,11 @@ main() {
     /* 9 */
     printn(3*(1+2), 10);
     putchar('*n');
+
+    /* 1 */
+    a = 1;
+    a = -a;
+    a = -a;
+    printn(a, 10);
+    putchar('*n');
 }
