@@ -27,7 +27,7 @@ word strtochar(const char *s);
 
 "/*"                    { BEGIN(COMMENT); }
 <COMMENT>"*/"           { BEGIN(INITIAL); }
-<COMMENT>\n             { yylineno++; }
+<COMMENT>\n             { }
 <COMMENT>.              { }
 
 \"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return STR; }

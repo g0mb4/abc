@@ -67,7 +67,8 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>INC
 %token <w>DEC
 
-/* precedence */
+/* precedence - lowest is in top */
+%right '=' ASEQU ASOREQU ASLESSEQU ASGREATEQU ASSHL ASSHR ASOR ASAND ASLESS ASGREAT ASPLUS ASMINUS ASMOD ASMUL ASDIV
 %left '|'
 %left '&'
 %left EQU NOTEQU
@@ -75,8 +76,6 @@ extern int yylineno;                    /* global variable for error riport */
 %left SHL SHR
 %left '+' '-'
 %left '*' '/' '%'
-
-%right '='
 
 %type <w>BINARY <w>INC-DEC <w>UNARY <w>ASSIGN
 %type <n>EXTRNLIST <n>AUTOLIST
@@ -170,13 +169,13 @@ ASSIGN
     ;
 
 INC-DEC
-    : INC   { $$ = $1; }
-    | DEC   { $$ = $1; }
+    : INC       { $$ = $1; }
+    | DEC       { $$ = $1; }
     ;
 
 UNARY
-    : '-'   { $$ = $1; }
-    | '!'   { $$ = $1; }
+    : '-'       { $$ = $1; }
+    | '!'       { $$ = $1; }
     ;
 
 BINARY
