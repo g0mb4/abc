@@ -12,7 +12,7 @@ extern int yyparse(void);               /* because we define a custom "main()" *
 void yyerror(const char * s, ...);      /* custom error report */
 
 extern const char *infile;              /* from main.c */
-extern int yylineno;                    /* global variable for error riport */
+extern int yylineno;                    /* global variable for error report */
 
 %}
 
@@ -67,11 +67,11 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>INC
 %token <w>DEC
 
-%type <n>EXTRNLIST <n>AUTOLIST
-%type <n>CONSTANT <n>LVALUE <n>CALLIST <n>RVALUE
-%type <n>DEFLIST <n>STATEMENT <n>STATEMENTS <n>DEFINITION <n>DEFINITIONS
+%type <n>EXTRNLIST <n>AUTOLIST <n>DEFLIST <n>CALLIST
+%type <n>CONSTANT <n>LVALUE <n>RVALUE
+%type <n>STATEMENT <n>STATEMENTS <n>DEFINITION <n>DEFINITIONS
 
-/* highest precedence */
+/* lowest precedence */
 %right '=' ASEQU ASOREQU ASLESSEQU ASGREATEQU ASSHL ASSHR ASOR ASAND ASLESS ASGREAT ASPLUS ASMINUS ASMOD ASMUL ASDIV
 %right '?' ':'
 %left '|'
@@ -84,7 +84,7 @@ extern int yylineno;                    /* global variable for error riport */
 %precedence UNARY
 %precedence PRE
 %precedence POST
-/* lowest precedence */
+/* highest precedence */
 
 %start PROGRAM
 
@@ -103,7 +103,7 @@ DEFINITION
     : NAME '(' DEFLIST ')' STATEMENT  { $$ = mkfundef(mkname($1), $3, $5); }
     | NAME ';'                        { $$ = mkvardef(mkname($1), NULL);   }
     | NAME CONSTANT ';'               { $$ = mkvardef(mkname($1), $2);     }
-    | NAME '[' CONSTANT ']' ';'       { $$ = mkvecdef(mkname($1), $3);     } /* TODO: initlist forr vectors*/
+    | NAME '[' CONSTANT ']' ';'       { $$ = mkvecdef(mkname($1), $3);     } /* TODO: initlist */
     ;
 
 DEFLIST
@@ -194,7 +194,7 @@ RVALUE
     | RVALUE '?' RVALUE ':' RVALUE  { $$ = mkternary($1, $3, $5); }
     | RVALUE '(' CALLIST ')'        { $$ = mkcall($1, $3);        }
     ;
-    
+
 CALLIST
     :                       { $$ = NULL;              }
     | RVALUE                { $$ = mklist($1);        }
@@ -207,7 +207,7 @@ LVALUE
     ;
 
 CONSTANT
-    : INT   { $$ = mkint($1); }
+    : INT   { $$ = mkint($1); }  /* NOTE: char is an int */
     | STR   { $$ = mkstr($1); }
     ;
 
