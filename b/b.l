@@ -46,6 +46,22 @@ word strtochar(const char *s);
 
 [A-Za-z_]+      { yylval.s = strdup(yytext); return NAME; }
 
+"==="           { yylval.w = ASEQU; return ASEQU; }
+"=|="           { yylval.w = ASOREQU; return ASOREQU; }
+"=<="           { yylval.w = ASLESSEQU; return ASLESSEQU; }
+"=>="           { yylval.w = ASGREATEQU; return ASGREATEQU; }
+"=<<"           { yylval.w = ASSHL; return ASSHL; }
+"=>>"           { yylval.w = ASSHR; return ASSHR; }
+"=|"            { yylval.w = ASOR; return ASOR; }
+"=&"            { yylval.w = ASAND; return ASAND; }
+"=<"            { yylval.w = ASLESS; return ASLESS; }
+"=>"            { yylval.w = ASGREAT; return ASGREAT; }
+"=+"            { yylval.w = ASPLUS; return ASPLUS; }
+"=-"            { yylval.w = ASMINUS; return ASMINUS; }
+"=%"            { yylval.w = ASMOD; return ASMOD; }
+"=*"            { yylval.w = ASMUL; return ASMUL; }
+"=/"            { yylval.w = ASDIV; return ASDIV; }
+
 "<="            { yylval.w = LESSEQU; return LESSEQU; }
 ">="            { yylval.w = GREATEQU; return GREATEQU; }
 "=="            { yylval.w = EQU; return EQU; }
@@ -54,8 +70,8 @@ word strtochar(const char *s);
 "++"            { yylval.w = INC; return INC; }
 "--"            { yylval.w = DEC; return DEC; }
 
-">>"            { yylval.w = SHR; return SHR; }
 "<<"            { yylval.w = SHL; return SHL; }
+">>"            { yylval.w = SHR; return SHR; }
 
 "("             { return '('; }
 ")"             { return ')'; }
@@ -78,7 +94,7 @@ word strtochar(const char *s);
 "<"             { yylval.w = '<'; return '<'; }
 ">"             { yylval.w = '>'; return '>'; }
 
-"="             { return '='; }
+"="             { yylval.w = '='; return '='; }
 
 \n              { } /* update yylineno */
 [ \t\r]+        { ; } /* ignore whitespace */

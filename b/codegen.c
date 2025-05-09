@@ -375,16 +375,38 @@ static void genassign(struct node *n)
     struct node *left = finddecl(currdef->decls, a->left);
     assert(left);
 
-    if (a->right->type == N_INT)
-        fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(a->right)->val);
-    else if (a->right->type == N_BINARY)
-        genbinary(a->right);
-    else if (a->right->type == N_UNARY)
-        genunary(a->right);
-    else if (a->right->type == N_CALL)
-        gencall(a->right);
-    else
+    switch (a->op) {
+    case '=':
+        gen(a->right);
+        break;
+    case ASEQU: assert(0 && "not implemented"); break;
+    case ASOREQU: assert(0 && "not implemented"); break;
+    case ASLESSEQU: assert(0 && "not implemented"); break;
+    case ASGREATEQU: assert(0 && "not implemented"); break;
+    case ASSHL: assert(0 && "not implemented"); break;
+    case ASSHR: assert(0 && "not implemented"); break;
+    case ASOR: assert(0 && "not implemented"); break;
+    case ASAND: assert(0 && "not implemented"); break;
+    case ASLESS: assert(0 && "not implemented"); break;
+    case ASGREAT: assert(0 && "not implemented"); break;
+    case ASPLUS:
+        gen(mkbinary('+', a->left, a->right));
+        break;
+    case ASMINUS:
+        gen(mkbinary('-', a->left, a->right));
+        break;
+    case ASMOD:
+        gen(mkbinary('%', a->left, a->right));
+        break;
+    case ASMUL:
+        gen(mkbinary('*', a->left, a->right));
+        break;
+    case ASDIV:
+        gen(mkbinary('/', a->left, a->right));
+        break;
+    default:
         assert(0);
+    }
 
     if (left->type == N_AUTO)
         fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(left)->offset);

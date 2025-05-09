@@ -40,12 +40,29 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>'!'
 %token <w>'<'
 %token <w>'>'
+%token <w>'='
 %token <w>LESSEQU
 %token <w>GREATEQU
 %token <w>EQU
 %token <w>NOTEQU
 %token <w>SHR
 %token <w>SHL
+
+%token <w>ASEQU
+%token <w>ASOREQU
+%token <w>ASLESSEQU
+%token <w>ASGREATEQU
+%token <w>ASSHL
+%token <w>ASSHR
+%token <w>ASOR
+%token <w>ASAND
+%token <w>ASLESS
+%token <w>ASGREAT
+%token <w>ASPLUS
+%token <w>ASMINUS
+%token <w>ASMOD
+%token <w>ASMUL
+%token <w>ASDIV
 
 %token <w>INC
 %token <w>DEC
@@ -59,7 +76,9 @@ extern int yylineno;                    /* global variable for error riport */
 %left '+' '-'
 %left '*' '/' '%'
 
-%type <w>BINARY <w>INC-DEC <w>UNARY
+%right '='
+
+%type <w>BINARY <w>INC-DEC <w>UNARY <w>ASSIGN
 %type <n>EXTRNLIST <n>AUTOLIST
 %type <n>CONSTANT <n>LVALUE <n>CALLIST <n>RVALUE
 %type <n>DEFLIST <n>STATEMENT <n>STATEMENTS <n>DEFINITION <n>DEFINITIONS
@@ -120,12 +139,31 @@ RVALUE
     : '(' RVALUE ')'            { $$ = $2; };
     | LVALUE                    { $$ = $1; }
     | CONSTANT                  { $$ = $1; }
-    | LVALUE '=' RVALUE         { $$ = mkassign($1, $3); }
+    | LVALUE ASSIGN RVALUE      { $$ = mkassign($2, $1, $3); }
     | INC-DEC LVALUE            { $$ = mkunary($1, $2, 1); }
     | LVALUE INC-DEC            { $$ = mkunary($2, $1, 0); }
     | UNARY RVALUE              { $$ = mkunary($1, $2, 0); }
     | RVALUE BINARY RVALUE      { $$ = mkbinary($2, $1, $3); }
     | RVALUE '(' CALLIST ')'    { $$ = mkcall($1, $3); }
+    ;
+
+ASSIGN
+    : '='           { $$ = $1; }
+    | ASEQU         { $$ = $1; }
+    | ASOREQU       { $$ = $1; }
+    | ASLESSEQU     { $$ = $1; }
+    | ASGREATEQU    { $$ = $1; }
+    | ASSHL         { $$ = $1; }
+    | ASSHR         { $$ = $1; }
+    | ASOR          { $$ = $1; }
+    | ASAND         { $$ = $1; }
+    | ASLESS        { $$ = $1; }
+    | ASGREAT       { $$ = $1; }
+    | ASPLUS        { $$ = $1; }
+    | ASMINUS       { $$ = $1; }
+    | ASMOD         { $$ = $1; }
+    | ASMUL         { $$ = $1; }
+    | ASDIV         { $$ = $1; }
     ;
 
 INC-DEC
@@ -155,7 +193,6 @@ BINARY
     | '*'       { $$ = $1; }
     | '/'       { $$ = $1; }
     ;
-
 
 CALLIST
     :                       { $$ = NULL; }

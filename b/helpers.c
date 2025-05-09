@@ -111,6 +111,8 @@ static void printcall(struct node *n, int indent)
 
 static void printassign(struct node *n, int indent)
 {
+    const char *op;
+
     assert(n);
     assert(n->type == N_ASSIGN);
 
@@ -120,6 +122,30 @@ static void printassign(struct node *n, int indent)
     assert(a->right);
 
     printf("%*sASSIGN(%d):\n", indent, "", a->id);
+
+    switch (a->op) {
+    case '=': op = "="; break;
+    case ASEQU: op = "===" ; break;
+    case ASOREQU: op = "=|=" ; break;
+    case ASLESSEQU: op = "=<=" ; break;
+    case ASGREATEQU: op = "=>=" ; break;
+    case ASSHL: op = "=<<" ; break;
+    case ASSHR: op = "=>>" ; break;
+    case ASOR: op = "=|"  ; break;
+    case ASAND: op = "=&"  ; break;
+    case ASLESS: op = "=<"  ; break;
+    case ASGREAT: op = "=>"  ; break;
+    case ASPLUS: op = "=+"  ; break;
+    case ASMINUS: op = "=-"  ; break;
+    case ASMOD: op = "=%"  ; break;
+    case ASMUL: op = "=*"  ; break;
+    case ASDIV: op = "=/"  ; break;
+    default:
+        assert(0);
+    }
+
+    printf("%*sOP: %s\n", indent, "", op);
+
     printf("%*sLEFT:\n", indent, "");
     print(a->left, indent + 2);
     printf("%*sRIGHT:\n", indent, "");

@@ -107,6 +107,7 @@ struct assignnode {
     int type;
     int id;
     
+    int op;
     struct node *left;
     struct node *right;
 };
@@ -172,7 +173,7 @@ struct node *mkdef(struct node *name, struct node *args, struct node *body);
 struct node *mkextrn(const char *s);
 struct node *mkauto(const char *s);
 
-struct node *mkassign(struct node *l, struct node *r);
+struct node *mkassign(int op, struct node *l, struct node *r);
 struct node *mkbinary(int op, struct node *l, struct node *r);
 struct node *mkunary(int op, struct node *v, int pre);
 

@@ -33,6 +33,7 @@ struct node *mkstr(const char *s)
 
     n->type = N_STRING;
     n->id = id++;
+
     n->val = strdup(s);
 
     return (struct node*)n;
@@ -47,6 +48,7 @@ struct node *mkint(word w)
 
     n->type = N_INT;
     n->id = id++;
+
     n->val = w;
 
     return (struct node*)n;
@@ -61,6 +63,7 @@ struct node *mkname(const char *s)
 
     n->type = N_NAME;
     n->id = id++;
+
     n->val = strdup(s);
 
     return (struct node*)n;
@@ -75,6 +78,7 @@ struct node *mkextrn(const char *s)
 
     n->type = N_EXTERN;
     n->id = id++;
+
     n->val = strdup(s);
 
     return (struct node*)n;
@@ -89,12 +93,13 @@ struct node *mkauto(const char *s)
 
     n->type = N_AUTO;
     n->id = id++;
+
     n->val = strdup(s);
 
     return (struct node*)n;
 }
 
-struct node *mkassign(struct node *l, struct node *r)
+struct node *mkassign(int op, struct node *l, struct node *r)
 {
     struct assignnode *n;
     n = malloc(sizeof(*n));
@@ -108,6 +113,8 @@ struct node *mkassign(struct node *l, struct node *r)
 
     n->type = N_ASSIGN;
     n->id = id++;
+
+    n->op = op;
     n->left = l;
     n->right = r;
 
@@ -123,6 +130,7 @@ struct node *mklist(struct node *e)
 
     n->type = N_LIST;
     n->id = id++;
+
     n->val = e;
 
     return (struct node*)n;
@@ -162,6 +170,7 @@ struct node *mkcall(struct node *name, struct node *args)
 
     n->type = N_CALL;
     n->id = id++;
+    
     n->name = name;
     n->args = args;
 

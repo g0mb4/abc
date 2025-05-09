@@ -9,6 +9,7 @@ tests=(
     t-hw
     t-auto
     t-char
+    t-assign
     t-arith
     t-fcn
     t-if
