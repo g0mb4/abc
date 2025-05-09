@@ -31,7 +31,7 @@ word strtochar(const char *s);
 <COMMENT>.              {                 }
 
 \"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return STR; }
-[\'][A-Za-z0-9_*()']+[\']   { yylval.w = strtochar(yytext); return INT;    }
+[\'][A-Za-z0-9_*() ']+[\']  { yylval.w = strtochar(yytext); return INT;    }
 [0-9]+                      { yylval.w = strtoword(yytext); return INT;    }
 
 "auto"              { return AUTO;     }

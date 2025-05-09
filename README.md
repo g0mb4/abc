@@ -7,7 +7,7 @@ A B Compiler targeting `x86_64-linux` based on [Ken Thompson's manual](doc/kbman
 
 Working examples:
 - [x] 9.1
-- [ ] 9.2
+- [x] 9.2 (compiles, numbers look good, but output is messed up)
 - [ ] 9.3
 
 ## Quickstart

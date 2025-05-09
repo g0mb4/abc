@@ -13,7 +13,7 @@ main() {
 	while(i<n)
 		v[i++] = 1;
 	while(col<2*n) {
-		a = n+1 ;
+		a = n+1;
 		c = i = 0;
 		while (i<n) {
 			c =+ v[i]*10;
@@ -25,7 +25,7 @@ main() {
 		if(!(++col%5))
 			putchar(col%50?' ':'*n');
 	}
-	putchar('*n*n');
+	putchar('*n*n');	/* TODO: fix putchar to put more than 1 chars */
 }
 
 v[2000];
