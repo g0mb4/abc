@@ -10,9 +10,17 @@ struct node *finddecl(struct node *dlist, struct node *name)
 {
     assert(name);
     struct listnode *curr = ASLIST(dlist);
+    const char *namestr;
 
-    assert(name->type == N_NAME);
-    const char *namestr = ASNAME(name)->val;
+    if (name->type == N_NAME)
+        namestr = ASNAME(name)->val;
+    else if(name->type == N_VECELEM) {
+        struct vecelemnode *v = (struct vecelemnode *)name;
+        assert(v->vec->type == N_NAME);
+        namestr = ASNAME(v->vec)->val;
+    } else {
+        assert(0);
+    }
 
     while (curr) {
         assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
@@ -77,22 +85,22 @@ static void printlist(struct node *n, int indent)
     printf("LIST(%d) end\n", n->id);
 }
 
-static void printdef(struct node *f, int indent)
+static void printfundef(struct node *f, int indent)
 {
     assert(f);
-    assert(f->type == N_DEF);
+    assert(f->type == N_FUNDEF);
 
-    printf("%*sDEF(%d) begin:\n", indent+1, "", f->id);
-    struct defnode *func = (struct defnode*)f;
+    printf("%*sFUNDEF(%d) begin:\n", indent+1, "", f->id);
+    struct fundefnode *fun = (struct fundefnode*)f;
     printf("%*sNAME: ", indent+1, ""); 
-    print(func->name, indent + 2);
+    print(fun->name, indent + 2);
     printf("%*sARGS: ", indent+1, ""); 
-    printlist(func->args, indent + 2);
+    printlist(fun->args, indent + 2);
     printf("%*sDECLS: ", indent+1, ""); 
-    printlist(func->decls, indent + 2);
+    printlist(fun->decls, indent + 2);
     printf("%*sBODY:", indent+1, ""); 
-    printlist(func->body, indent + 2);
-    printf("%*sDEF(%d) end:\n", indent+1, "", f->id);
+    printlist(fun->body, indent + 2);
+    printf("%*sFUNDEF(%d) end\n", indent+1, "", f->id);
 }
 
 static void printcall(struct node *n, int indent)
@@ -100,7 +108,7 @@ static void printcall(struct node *n, int indent)
     assert(n);
     assert(n->type == N_CALL);
 
-    struct defnode *f = (struct defnode*)n;
+    struct fundefnode *f = (struct fundefnode*)n;
 
     printf("%*sCALL(%d):\n", indent, "", n->id);
     printf("%*sNAME: ", indent+1, ""); 
@@ -268,6 +276,42 @@ static void printunary(struct node *n, int indent)
     print(u->val, indent + 2);
 }
 
+void printvecelem(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_VECELEM);
+
+    struct vecelemnode *v = (struct vecelemnode*)n;
+    printf("%*sVECELEM(%d):\n", indent, "", v->id);
+    printf("%*sVEC: ", indent + 2, "");
+    print(v->vec, indent + 2);
+    printf("%*sINDEX: ", indent + 2, "");
+    print(v->index, indent + 2);
+}
+
+void printvardef(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_VARDEF);
+    struct vardefnode *v = (struct vardefnode*)n;
+    printf("%*sVARDEF(%d): `%s`", indent, "", v->id, ASNAME(v->name)->val);
+    if (v->init) {
+        printf("=");
+        print(v->init, 0);
+    }
+    printf("\n");
+}
+
+void printvecdef(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_VECDEF);
+    struct vecdefnode *v = (struct vecdefnode*)n;
+    printf("%*sVECDEF(%d): `%s`", indent, "", v->id, ASNAME(v->name)->val);
+    printf("%*sCOUNT: ", indent + 2, "");
+    print(v->count, indent + 2);
+}
+
 void print(struct node *n, int indent)
 {
     assert(n);
@@ -301,8 +345,8 @@ void print(struct node *n, int indent)
     case N_CALL:
         printcall(n, indent);
         break;
-    case N_DEF:
-        printdef(n, indent);
+    case N_FUNDEF:
+        printfundef(n, indent);
         break;
     case N_ASSIGN:
         printassign(n, indent);
@@ -321,6 +365,15 @@ void print(struct node *n, int indent)
         break;
     case N_UNARY:
         printunary(n, indent);
+        break;
+    case N_VECELEM:
+        printvecelem(n, indent);
+        break;
+    case N_VARDEF:
+        printvardef(n, indent);
+        break;
+    case N_VECDEF:
+        printvecdef(n, indent);
         break;
     default:
         assert(0);

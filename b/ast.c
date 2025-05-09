@@ -106,7 +106,6 @@ struct node *mkassign(int op, struct node *l, struct node *r)
     assert(n);
     memset(n, 0, sizeof(*n));
 
-    assert(l->type == N_NAME);
     struct node* d = finddecl(decls, l);
     if (!d)
         yyerror("unknown variable `%s`", ASNAME(l)->val);
@@ -170,24 +169,24 @@ struct node *mkcall(struct node *name, struct node *args)
 
     n->type = N_CALL;
     n->id = id++;
-    
+
     n->name = name;
     n->args = args;
 
     return (struct node*)n;
 }
 
-struct node *mkdef(struct node *name, struct node *args, struct node *body)
+struct node *mkfundef(struct node *name, struct node *args, struct node *body)
 {
     assert(name);
     assert(body);
 
-    struct defnode *n;
+    struct fundefnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
 
-    n->type = N_DEF;
+    n->type = N_FUNDEF;
     n->id = id++;
 
     assert(name->type == N_NAME);
@@ -287,6 +286,54 @@ struct node *mkwhile(struct node *c, struct node *b)
 
     n->cond = c;
     n->body = b;
+
+    return (struct node*)n;
+}
+
+struct node *mkvecelem(struct node *v, struct node *i)
+{
+    struct vecelemnode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_VECELEM;
+    n->id = id++;
+
+    n->vec = v;
+    n->index = i;
+
+    return (struct node*)n;
+}
+
+struct node *mkvardef(struct node *name, struct node *init)
+{
+    struct vardefnode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_VARDEF;
+    n->id = id++;
+
+    n->name = name;
+    n->init = init;
+
+    return (struct node*)n;
+}
+
+struct node *mkvecdef(struct node *name, struct node *count)
+{
+    struct vecdefnode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_VECDEF;
+    n->id = id++;
+
+    n->name = name;
+    n->count = count;
 
     return (struct node*)n;
 }

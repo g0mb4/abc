@@ -19,7 +19,7 @@ enum {
     N_NAME,
     N_LIST,
     N_CALL,
-    N_DEF,
+    N_FUNDEF,
     N_EXTERN,
     N_AUTO,
     N_ASSIGN,
@@ -28,6 +28,9 @@ enum {
     N_RETURN,
     N_IF,
     N_WHILE,
+    N_VECELEM,
+    N_VARDEF,
+    N_VECDEF,
 };
 
 struct node {
@@ -72,7 +75,7 @@ struct callnode {
     struct node *args;
 };
 
-struct defnode {
+struct fundefnode {
     int type;
     int id;
 
@@ -156,6 +159,30 @@ struct whilenode {
     struct node *body;
 };
 
+struct vecelemnode {
+    int type;
+    int id;
+    
+    struct node *vec;
+    struct node *index;
+};
+
+struct vardefnode {
+    int type;
+    int id;
+    
+    struct node *name;
+    struct node *init;
+};
+
+struct vecdefnode {
+    int type;
+    int id;
+    
+    struct node *name;
+    struct node *count;
+};
+
 struct node *mkempty(void);
 
 struct node *mkstr(const char *s);
@@ -168,7 +195,7 @@ struct node *listfront(struct node *l, struct node *n);
 struct node *mkdecl(struct node *n, struct node *i);
 
 struct node *mkcall(struct node *name, struct node *args);
-struct node *mkdef(struct node *name, struct node *args, struct node *body);
+struct node *mkfundef(struct node *name, struct node *args, struct node *body);
 
 struct node *mkextrn(const char *s);
 struct node *mkauto(const char *s);
@@ -180,5 +207,10 @@ struct node *mkunary(int op, struct node *v, int pre);
 struct node *mkreturn(struct node *v);
 struct node *mkif(struct node *c, struct node *t, struct node *f);
 struct node *mkwhile(struct node *c, struct node *b);
+
+struct node *mkvecelem(struct node *v, struct node *i);
+
+struct node *mkvardef(struct node *name, struct node *init);
+struct node *mkvecdef(struct node *name, struct node *count);
 
 #endif /* AST_H */

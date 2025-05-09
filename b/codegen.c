@@ -10,12 +10,27 @@
 extern FILE *out;    /* from main.c */
 
 // TODO: dynarr
-static const char *data[1024];
+#define DATASIZE   1024
+static const char *data[DATASIZE];
 static int datactr;
 
-static struct defnode *currdef = NULL;
+static struct fundefnode *currdef = NULL;
 
 static void gen(struct node *n);
+
+static void appenddata(const char *s)
+{
+    int i;
+    assert(s);
+
+    for (i = 0; i < datactr; ++i) {
+        if (!strcmp(data[i], s))
+            return;
+    }
+
+    assert(datactr + 1 < DATASIZE);
+    data[datactr++] = strdup(s);
+}
 
 static char *argreg(int index)
 {
@@ -84,11 +99,11 @@ static void genargs(struct node *n)
     }
 }
 
-static void gendef(struct node *n)
+static void genfundef(struct node *n)
 {
-    assert(n->type == N_DEF);
+    assert(n->type == N_FUNDEF);
 
-    struct defnode *def = (struct defnode*)n;
+    struct fundefnode *def = (struct fundefnode*)n;
 
     currdef = def;
 
@@ -497,11 +512,10 @@ static void gen(struct node *n)
     case N_STRING:
         fprintf(out, "\tmovq $str_%d, %%rax\n", n->id);
 
-        /* TODO: don't add it multiple times */
         memset(buffer, 0, sizeof(buffer));
         snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", n->id, ASSTR(n)->val);
-        data[datactr++] = strdup(buffer);
-        
+        appenddata(buffer);
+
         break;
     case N_NAME:
         genname(n);
@@ -512,8 +526,8 @@ static void gen(struct node *n)
     case N_CALL:
         gencall(n);
         break;
-    case N_DEF:
-        gendef(n);
+    case N_FUNDEF:
+        genfundef(n);
         break;
     case N_ASSIGN:
         genassign(n);

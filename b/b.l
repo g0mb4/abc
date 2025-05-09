@@ -77,6 +77,8 @@ word strtochar(const char *s);
 ")"             { return ')'; }
 "{"             { return '{'; }
 "}"             { return '}'; }
+"["             { return '['; }
+"]"             { return ']'; }
 
 ";"             { return ';'; }
 ","             { return ','; }

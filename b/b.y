@@ -96,7 +96,10 @@ DEFINITIONS
     ;
 
 DEFINITION
-    : NAME '(' DEFLIST ')' STATEMENT  { $$ = mkdef(mkname($1), $3, $5); }
+    : NAME '(' DEFLIST ')' STATEMENT  { $$ = mkfundef(mkname($1), $3, $5); }
+    | NAME ';'                        { $$ = mkvardef(mkname($1), NULL); }
+    | NAME CONSTANT ';'               { $$ = mkvardef(mkname($1), $2); }
+    | NAME '[' CONSTANT ']' ';'       { $$ = mkvecdef(mkname($1), $3); } /* TODO: initlist forr vectors*/
     ;
 
 DEFLIST
@@ -201,7 +204,8 @@ CALLIST
     ;
 
 LVALUE
-    : NAME  { $$ = mkname($1); }
+    : NAME                  { $$ = mkname($1); }
+    | RVALUE '[' RVALUE ']' { $$ = mkvecelem($1, $3); }
     ;
 
 CONSTANT
