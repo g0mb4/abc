@@ -17,6 +17,7 @@ tests=(
     t-logic
     t-inc-dec
     t-bitwise
+    t-extvec
 )
 
 passed=0

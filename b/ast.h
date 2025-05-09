@@ -10,7 +10,7 @@
 #define ASAUTO(n) ((struct autonode *)n)
 
 typedef long long int word;
-#define WORD_SIZE   sizeof(word)
+#define WORDSIZE    sizeof(word)
 
 enum {
     N_EMPTY = 0,

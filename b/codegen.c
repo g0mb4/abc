@@ -60,9 +60,9 @@ static void gendecl(void)
         assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
         if (curr->val->type == N_AUTO) {
             a = ASAUTO(curr->val);
-            currdef->stacksize += WORD_SIZE;
+            currdef->stacksize += WORDSIZE;
             ASAUTO(curr->val)->offset = currdef->stacksize;   /* update the list element, not the copy */
-            fprintf(out, "\tsubq $%lu, %%rsp\n", WORD_SIZE);
+            fprintf(out, "\tsubq $%lu, %%rsp\n", WORDSIZE);
 
             if (a->init) {
                 assert(a->init->type == N_INT);
@@ -88,9 +88,9 @@ static void genargs(struct node *n)
     while (curr) {
         assert(curr->val->type == N_NAME);
         a = ASAUTO(mkauto(ASNAME(curr->val)->val));
-        currdef->stacksize += WORD_SIZE;
+        currdef->stacksize += WORDSIZE;
         a->offset = currdef->stacksize;
-        fprintf(out, "\tsubq $%lu, %%rsp\n", WORD_SIZE);
+        fprintf(out, "\tsubq $%lu, %%rsp\n", WORDSIZE);
         fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(i++), currdef->stacksize);
 
         currdef->decls = listback(currdef->decls, ASNODE(a));
@@ -384,7 +384,6 @@ static void genassign(struct node *n)
     struct assignnode *a = (struct assignnode *)n;
 
     assert(a->left);
-    assert(a->left->type == N_NAME);
     assert(a->right);
 
     struct node *left = finddecl(currdef->decls, a->left);
@@ -423,12 +422,24 @@ static void genassign(struct node *n)
         assert(0);
     }
 
-    if (left->type == N_AUTO)
+    if (left->type == N_AUTO) {
         fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(left)->offset);
-    else if (left->type == N_EXTERN)
-        fprintf(out, "\tmovq %%rax, %s\n", ASEXTERN(left)->val);
-    else
+    } else if (left->type == N_EXTERN) {
+        if (a->left->type == N_NAME) {
+            fprintf(out, "\tmovq %%rax, %s\n", ASEXTERN(left)->val);
+        } else if (a->left->type == N_VECELEM) {
+            struct vecelemnode *v = (struct vecelemnode*)a->left;
+            fprintf(out, "\tpushq %%rax\n");
+            gen(v->index);
+            fprintf(out, "\tmovq %%rax, %%rbx\n");
+            fprintf(out, "\tpopq %%rax\n");
+            fprintf(out, "\tmovq %%rax, %s(,%%rbx, %lu)\n", ASEXTERN(left)->val, WORDSIZE);
+        } else {
+            assert(0);
+        }
+    } else {
         assert(0);
+    }
 }
 
 static void genreturn(struct node *n)
@@ -491,10 +502,77 @@ static void genwhile(struct node *n)
     fprintf(out, "while_%d_end:\n", w->id);
 }
 
-static void gen(struct node *n)
+static void genvecelem(struct node *n)
+{
+    assert(n);
+    assert(n->type == N_VECELEM);
+
+    struct vecelemnode *v = (struct vecelemnode *)n;
+
+    struct node *vecdecl = finddecl(currdef->decls, n);
+    assert(vecdecl);
+
+    assert(vecdecl->type == N_EXTERN);
+
+    gen(v->index);
+    fprintf(out, "\tmovq %%rax, %%rbx\n");
+    fprintf(out, "\tmovq %s(,%%rbx, %lu), %%rax\n", ASEXTERN(vecdecl)->val, WORDSIZE);
+}
+
+static void genstr(struct node *n)
 {
     char buffer[128];
 
+    assert(n->type == N_STRING);
+
+    fprintf(out, "\tmovq $str_%d, %%rax\n", n->id);
+
+    memset(buffer, 0, sizeof(buffer));
+    snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", n->id, ASSTR(n)->val);
+    appenddata(buffer);
+}
+
+static void genvardef(struct node *n)
+{
+    char buffer[128];
+
+    assert(n->type == N_VARDEF);
+
+    struct vardefnode *v = (struct vardefnode *)n;
+
+    memset(buffer, 0, sizeof(buffer));
+
+    if (v->init) {
+        assert(v->init->type == N_INT);
+        snprintf(buffer, sizeof(buffer), "%s: .quad %lld\n", 
+                 ASNAME(v->name)->val, ASINT(v->init)->val);
+    } else {
+        snprintf(buffer, sizeof(buffer), "%s: .zero %lu\n", 
+                 ASNAME(v->name)->val, WORDSIZE);
+    }
+
+    appenddata(buffer);
+}
+
+static void genvecdef(struct node *n)
+{
+    char buffer[128];
+
+    assert(n->type == N_VECDEF);
+
+    struct vecdefnode *v = (struct vecdefnode *)n;
+
+    memset(buffer, 0, sizeof(buffer));
+
+    assert(v->count->type == N_INT);
+    snprintf(buffer, sizeof(buffer), "%s: .zero %lld\n",
+             ASNAME(v->name)->val, ASINT(v->count)->val * WORDSIZE);
+    
+    appenddata(buffer);
+}
+
+static void gen(struct node *n)
+{
     assert(n);
     switch(n->type) {
     case N_EMPTY:
@@ -510,12 +588,7 @@ static void gen(struct node *n)
         fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(n)->val);
         break;
     case N_STRING:
-        fprintf(out, "\tmovq $str_%d, %%rax\n", n->id);
-
-        memset(buffer, 0, sizeof(buffer));
-        snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", n->id, ASSTR(n)->val);
-        appenddata(buffer);
-
+        genstr(n);
         break;
     case N_NAME:
         genname(n);
@@ -546,6 +619,15 @@ static void gen(struct node *n)
         break;
     case N_WHILE:
         genwhile(n);
+        break;
+    case N_VECELEM:
+        genvecelem(n);
+        break;
+    case N_VARDEF:
+        genvardef(n);
+        break;
+    case N_VECDEF:
+        genvecdef(n);
         break;
     default:
         assert(0);

@@ -207,7 +207,7 @@ word strtochar(const char *s)
     word w = 0;
 
     len = strlen(s);
-    if (len <= 2 || len > (int)WORD_SIZE * 2){
+    if (len <= 2 || len > (int)WORDSIZE * 2){
         yyerror("invalid character literal: %s", s);
         return -1;
     }

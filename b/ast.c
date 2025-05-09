@@ -317,6 +317,10 @@ struct node *mkvardef(struct node *name, struct node *init)
     n->id = id++;
 
     n->name = name;
+
+    if (init && init->type != N_INT)
+        yyerror("inital value must be an integer");
+
     n->init = init;
 
     return (struct node*)n;
@@ -333,6 +337,10 @@ struct node *mkvecdef(struct node *name, struct node *count)
     n->id = id++;
 
     n->name = name;
+
+    if (count->type != N_INT)
+        yyerror("count must be an integer");
+
     n->count = count;
 
     return (struct node*)n;

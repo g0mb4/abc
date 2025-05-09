@@ -47,12 +47,8 @@ int main(int argc, char ** argv) {
     if (ret != 0)
         return 1;
 
-    fclose(in);
-#if 0
-    /* TODO: if it is active the program fails with: 
-       corrupted size vs. prev_size */
-    fclose(out);
-#endif
+
+    /* Linux will do the cleanup */
 
     return 0;
 }
