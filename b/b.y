@@ -67,7 +67,11 @@ extern int yylineno;                    /* global variable for error riport */
 %token <w>INC
 %token <w>DEC
 
-/* precedence - lowest is in top */
+%type <n>EXTRNLIST <n>AUTOLIST
+%type <n>CONSTANT <n>LVALUE <n>CALLIST <n>RVALUE
+%type <n>DEFLIST <n>STATEMENT <n>STATEMENTS <n>DEFINITION <n>DEFINITIONS
+
+/* highest precedence */
 %right '=' ASEQU ASOREQU ASLESSEQU ASGREATEQU ASSHL ASSHR ASOR ASAND ASLESS ASGREAT ASPLUS ASMINUS ASMOD ASMUL ASDIV
 %left '|'
 %left '&'
@@ -76,11 +80,11 @@ extern int yylineno;                    /* global variable for error riport */
 %left SHL SHR
 %left '+' '-'
 %left '*' '/' '%'
+%precedence UNARY
+%precedence PRE
+%precedence POST
+/* lowest precedence */
 
-%type <w>BINARY <w>INC-DEC <w>UNARY <w>ASSIGN
-%type <n>EXTRNLIST <n>AUTOLIST
-%type <n>CONSTANT <n>LVALUE <n>CALLIST <n>RVALUE
-%type <n>DEFLIST <n>STATEMENT <n>STATEMENTS <n>DEFINITION <n>DEFINITIONS
 %start PROGRAM
 
 %%
@@ -141,61 +145,54 @@ RVALUE
     : '(' RVALUE ')'            { $$ = $2; };
     | LVALUE                    { $$ = $1; }
     | CONSTANT                  { $$ = $1; }
-    | LVALUE ASSIGN RVALUE      { $$ = mkassign($2, $1, $3); }
-    | INC-DEC LVALUE            { $$ = mkunary($1, $2, 1); }
-    | LVALUE INC-DEC            { $$ = mkunary($2, $1, 0); }
-    | UNARY RVALUE              { $$ = mkunary($1, $2, 0); }
-    | RVALUE BINARY RVALUE      { $$ = mkbinary($2, $1, $3); }
+    /* ASSIGN */
+    | LVALUE '='        RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASEQU      RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASOREQU    RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASLESSEQU  RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASGREATEQU RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASSHL      RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASSHR      RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASOR       RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASAND      RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASLESS     RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASGREAT    RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASPLUS     RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASMINUS    RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASMOD      RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASMUL      RVALUE  { $$ = mkassign($2, $1, $3); }
+    | LVALUE ASDIV      RVALUE  { $$ = mkassign($2, $1, $3); }
+    /* ----------- */
+    /* INC-DEC */
+    | INC LVALUE %prec PRE      { $$ = mkunary($1, $2, 1); }
+    | DEC LVALUE %prec PRE      { $$ = mkunary($1, $2, 1); }
+    | LVALUE INC %prec POST     { $$ = mkunary($2, $1, 0); }
+    | LVALUE DEC %prec POST     { $$ = mkunary($2, $1, 0); }
+    /* ----------- */
+    /* UNARY */
+    | '-' RVALUE %prec UNARY    { $$ = mkunary($1, $2, 0); }
+    | '!' RVALUE %prec UNARY    { $$ = mkunary($1, $2, 0); }
+    /* ----------- */
+    /* BINARY */
+    | RVALUE '|'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '&'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE EQU      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE NOTEQU   RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '<'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE LESSEQU  RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '>'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE GREATEQU RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE SHL      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE SHR      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '-'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '+'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '%'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '*'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    | RVALUE '/'      RVALUE    { $$ = mkbinary($2, $1, $3); }
+    /* ----------- */
     | RVALUE '(' CALLIST ')'    { $$ = mkcall($1, $3); }
     ;
-
-ASSIGN
-    : '='           { $$ = $1; }
-    | ASEQU         { $$ = $1; }
-    | ASOREQU       { $$ = $1; }
-    | ASLESSEQU     { $$ = $1; }
-    | ASGREATEQU    { $$ = $1; }
-    | ASSHL         { $$ = $1; }
-    | ASSHR         { $$ = $1; }
-    | ASOR          { $$ = $1; }
-    | ASAND         { $$ = $1; }
-    | ASLESS        { $$ = $1; }
-    | ASGREAT       { $$ = $1; }
-    | ASPLUS        { $$ = $1; }
-    | ASMINUS       { $$ = $1; }
-    | ASMOD         { $$ = $1; }
-    | ASMUL         { $$ = $1; }
-    | ASDIV         { $$ = $1; }
-    ;
-
-INC-DEC
-    : INC       { $$ = $1; }
-    | DEC       { $$ = $1; }
-    ;
-
-UNARY
-    : '-'       { $$ = $1; }
-    | '!'       { $$ = $1; }
-    ;
-
-BINARY
-    : '|'       { $$ = $1; }
-    | '&'       { $$ = $1; }
-    | EQU       { $$ = $1; }
-    | NOTEQU    { $$ = $1; }
-    | '<'       { $$ = $1; }
-    | LESSEQU   { $$ = $1; }
-    | '>'       { $$ = $1; }
-    | GREATEQU  { $$ = $1; }
-    | SHL       { $$ = $1; }
-    | SHR       { $$ = $1; }
-    | '-'       { $$ = $1; }
-    | '+'       { $$ = $1; }
-    | '%'       { $$ = $1; }
-    | '*'       { $$ = $1; }
-    | '/'       { $$ = $1; }
-    ;
-
+    
 CALLIST
     :                       { $$ = NULL; }
     | RVALUE                { $$ = mklist($1); }

@@ -11,8 +11,5 @@ printn(n,b) {
 	if(a=n/b) /* assignment, not test for equality */
 		printn(a, b); /* recursive */
 
-	/* TODO: fix precedence, original code:
-		putchar(n%b + '0');
-	*/
-	putchar((n%b) + '0');
+	putchar(n%b + '0');
 }
