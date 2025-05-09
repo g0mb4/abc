@@ -30,18 +30,6 @@ main() {
     printn(c, 10);
     putchar('*n');
 
-    /* 7 */
-    printn(1+2*3, 10);
-    putchar('*n');
-
-    /* 9 */
-    printn((1+2)*3, 10);
-    putchar('*n');
-
-    /* 9 */
-    printn(3*(1+2), 10);
-    putchar('*n');
-
     /* 1 */
     a = 1;
     a = -a;
