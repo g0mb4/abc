@@ -423,7 +423,10 @@ static void genassign(struct node *n)
     }
 
     if (left->type == N_AUTO) {
-        fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(left)->offset);
+        if (a->left->type == N_NAME)
+            fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(left)->offset);
+        else 
+            assert(0);
     } else if (left->type == N_EXTERN) {
         if (a->left->type == N_NAME) {
             fprintf(out, "\tmovq %%rax, %s\n", ASEXTERN(left)->val);
