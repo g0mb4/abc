@@ -94,55 +94,55 @@ PROGRAM
     ;
 
 DEFINITIONS
-    :                           { $$ = NULL; }
+    :                           { $$ = NULL;              }
     | DEFINITION DEFINITIONS    { $$ = listfront($2, $1); }
     ;
 
 DEFINITION
     : NAME '(' DEFLIST ')' STATEMENT  { $$ = mkfundef(mkname($1), $3, $5); }
-    | NAME ';'                        { $$ = mkvardef(mkname($1), NULL); }
-    | NAME CONSTANT ';'               { $$ = mkvardef(mkname($1), $2); }
-    | NAME '[' CONSTANT ']' ';'       { $$ = mkvecdef(mkname($1), $3); } /* TODO: initlist forr vectors*/
+    | NAME ';'                        { $$ = mkvardef(mkname($1), NULL);   }
+    | NAME CONSTANT ';'               { $$ = mkvardef(mkname($1), $2);     }
+    | NAME '[' CONSTANT ']' ';'       { $$ = mkvecdef(mkname($1), $3);     } /* TODO: initlist forr vectors*/
     ;
 
 DEFLIST
-    :                           { $$ = NULL; }
-    | NAME                      { $$ = mklist(mkname($1)); }
+    :                           { $$ = NULL;                      }
+    | NAME                      { $$ = mklist(mkname($1));        }
     | NAME ',' DEFLIST          { $$ = listfront($3, mkname($1)); }
     ;
 
 STATEMENTS
-    : STATEMENT                 { $$ = mklist($1); }
+    : STATEMENT                 { $$ = mklist($1);        }
     | STATEMENT STATEMENTS      { $$ = listfront($2, $1); }
     ;
 
 STATEMENT
-    : EXTRN EXTRNLIST ';'                           { $$ = $2; }
-    | AUTO AUTOLIST ';'                             { $$ = $2; };
+    : EXTRN EXTRNLIST ';'                           { $$ = $2;                 }
+    | AUTO AUTOLIST ';'                             { $$ = $2;                 }
     | IF '(' RVALUE ')' STATEMENT                   { $$ = mkif($3, $5, NULL); }
-    | IF '(' RVALUE ')' STATEMENT ELSE STATEMENT    { $$ = mkif($3, $5, $7); }
-    | WHILE '(' RVALUE ')' STATEMENT                { $$ = mkwhile($3, $5); }
-    | '{' STATEMENTS '}'                            { $$ = $2; }
-    | RETURN ';'                                    { $$ = mkreturn(NULL); }
-    | RETURN '(' RVALUE ')' ';'                     { $$ = mkreturn($3); }
-    | RVALUE ';'                                    { $$ = $1; }
-    | ';'                                           { $$ = mkempty(); }
+    | IF '(' RVALUE ')' STATEMENT ELSE STATEMENT    { $$ = mkif($3, $5, $7);   }
+    | WHILE '(' RVALUE ')' STATEMENT                { $$ = mkwhile($3, $5);    }
+    | '{' STATEMENTS '}'                            { $$ = $2;                 }
+    | RETURN ';'                                    { $$ = mkreturn(NULL);     }
+    | RETURN '(' RVALUE ')' ';'                     { $$ = mkreturn($3);       }
+    | RVALUE ';'                                    { $$ = $1;                 }
+    | ';'                                           { $$ = mkempty();          }
     ;
 
 EXTRNLIST
-    : NAME                      { $$ = mklist(mkdecl(mkextrn($1), NULL));          }
+    : NAME                      { $$ = mklist(mkdecl(mkextrn($1), NULL));        }
     | NAME ',' EXTRNLIST        { $$ = listfront($3, mkdecl(mkextrn($1), NULL)); }
     ;
 
 AUTOLIST
-    : NAME                          { $$ = mklist(mkdecl(mkauto($1), NULL));  }
-    | NAME CONSTANT                 { $$ = mklist(mkdecl(mkauto($1), $2));    } /* TODO: vector */
+    : NAME                          { $$ = mklist(mkdecl(mkauto($1), NULL));        }
+    | NAME CONSTANT                 { $$ = mklist(mkdecl(mkauto($1), $2));          } /* TODO: vector */
     | NAME ',' AUTOLIST             { $$ = listfront($3, mkdecl(mkauto($1), NULL)); }
-    | NAME CONSTANT ',' AUTOLIST    { $$ = listfront($4, mkdecl(mkauto($1), $2)); }
+    | NAME CONSTANT ',' AUTOLIST    { $$ = listfront($4, mkdecl(mkauto($1), $2));   }
     ;
 
 RVALUE
-    : '(' RVALUE ')'            { $$ = $2; };
+    : '(' RVALUE ')'            { $$ = $2; }
     | LVALUE                    { $$ = $1; }
     | CONSTANT                  { $$ = $1; }
     /* ASSIGN */
@@ -164,10 +164,10 @@ RVALUE
     | LVALUE ASDIV      RVALUE  { $$ = mkassign($2, $1, $3); }
     /* ----------- */
     /* INC-DEC */
-    | INC LVALUE %prec PRE      { $$ = mkunary($1, $2, 1); }
-    | DEC LVALUE %prec PRE      { $$ = mkunary($1, $2, 1); }
-    | LVALUE INC %prec POST     { $$ = mkunary($2, $1, 0); }
-    | LVALUE DEC %prec POST     { $$ = mkunary($2, $1, 0); }
+    | INC RVALUE %prec PRE      { $$ = mkunary($1, $2, 1); }
+    | DEC RVALUE %prec PRE      { $$ = mkunary($1, $2, 1); }
+    | RVALUE INC %prec POST     { $$ = mkunary($2, $1, 0); }
+    | RVALUE DEC %prec POST     { $$ = mkunary($2, $1, 0); }
     /* ----------- */
     /* UNARY */
     | '-' RVALUE %prec UNARY    { $$ = mkunary($1, $2, 0); }
@@ -194,13 +194,13 @@ RVALUE
     ;
     
 CALLIST
-    :                       { $$ = NULL; }
-    | RVALUE                { $$ = mklist($1); }
+    :                       { $$ = NULL;              }
+    | RVALUE                { $$ = mklist($1);        }
     | RVALUE ',' CALLIST    { $$ = listfront($3, $1); }
     ;
 
 LVALUE
-    : NAME                  { $$ = mkname($1); }
+    : NAME                  { $$ = mkname($1);        }
     | RVALUE '[' RVALUE ']' { $$ = mkvecelem($1, $3); }
     ;
 
@@ -211,7 +211,8 @@ CONSTANT
 
 %%
 
-void yyerror(const char * fmt, ...) {
+void yyerror(const char * fmt, ...)
+{
     va_list args;
 
     fprintf(stderr, "%s: %d: ", infile, yylineno);
