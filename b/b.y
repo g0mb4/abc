@@ -73,6 +73,7 @@ extern int yylineno;                    /* global variable for error riport */
 
 /* highest precedence */
 %right '=' ASEQU ASOREQU ASLESSEQU ASGREATEQU ASSHL ASSHR ASOR ASAND ASLESS ASGREAT ASPLUS ASMINUS ASMOD ASMUL ASDIV
+%right '?' ':'
 %left '|'
 %left '&'
 %left EQU NOTEQU
