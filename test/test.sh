@@ -18,6 +18,7 @@ tests=(
     t-inc-dec
     t-bitwise
     t-extvec
+    t-prec
 )
 
 passed=0
