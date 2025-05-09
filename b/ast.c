@@ -345,3 +345,20 @@ struct node *mkvecdef(struct node *name, struct node *count)
 
     return (struct node*)n;
 }
+
+struct node *mkternary(struct node *c, struct node *t, struct node *f)
+{
+    struct ternarynode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_TERNARY;
+    n->id = id++;
+
+    n->cond = c;
+    n->truee = t;
+    n->falsee = f;
+
+    return (struct node*)n;
+}

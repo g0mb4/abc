@@ -190,7 +190,8 @@ RVALUE
     | RVALUE '*'      RVALUE    { $$ = mkbinary($2, $1, $3); }
     | RVALUE '/'      RVALUE    { $$ = mkbinary($2, $1, $3); }
     /* ----------- */
-    | RVALUE '(' CALLIST ')'    { $$ = mkcall($1, $3); }
+    | RVALUE '?' RVALUE ':' RVALUE  { $$ = mkternary($1, $3, $5); }
+    | RVALUE '(' CALLIST ')'        { $$ = mkcall($1, $3);        }
     ;
     
 CALLIST

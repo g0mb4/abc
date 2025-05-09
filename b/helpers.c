@@ -282,6 +282,7 @@ void printvecelem(struct node *n, int indent)
     assert(n->type == N_VECELEM);
 
     struct vecelemnode *v = (struct vecelemnode*)n;
+
     printf("%*sVECELEM(%d):\n", indent, "", v->id);
     printf("%*sVEC: ", indent + 2, "");
     print(v->vec, indent + 2);
@@ -293,7 +294,9 @@ void printvardef(struct node *n, int indent)
 {
     assert(n);
     assert(n->type == N_VARDEF);
+
     struct vardefnode *v = (struct vardefnode*)n;
+
     printf("%*sVARDEF(%d): `%s`", indent, "", v->id, ASNAME(v->name)->val);
     if (v->init) {
         printf("=");
@@ -306,10 +309,28 @@ void printvecdef(struct node *n, int indent)
 {
     assert(n);
     assert(n->type == N_VECDEF);
+
     struct vecdefnode *v = (struct vecdefnode*)n;
+
     printf("%*sVECDEF(%d): `%s`", indent, "", v->id, ASNAME(v->name)->val);
     printf("%*sCOUNT: ", indent + 2, "");
     print(v->count, indent + 2);
+}
+
+void printternary(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_TERNARY);
+
+    struct ternarynode *t = (struct ternarynode*)n;
+
+    printf("%*sTERNARY(%d):\n", indent, "", t->id);
+    printf("%*sCOND:\n", indent, "");
+    print(t->cond, indent + 2);
+    printf("%*sTRUE:\n", indent, "");
+    print(t->truee, indent + 2);
+    printf("%*sFALSE:\n", indent, "");
+    print(t->falsee, indent + 2);
 }
 
 void print(struct node *n, int indent)
@@ -374,6 +395,9 @@ void print(struct node *n, int indent)
         break;
     case N_VECDEF:
         printvecdef(n, indent);
+        break;
+    case N_TERNARY:
+        printternary(n, indent);
         break;
     default:
         assert(0);

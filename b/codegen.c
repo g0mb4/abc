@@ -574,6 +574,22 @@ static void genvecdef(struct node *n)
     appenddata(buffer);
 }
 
+static void genternary(struct node *n)
+{
+    assert(n->type == N_TERNARY);
+
+    struct ternarynode *t = (struct ternarynode*)n;
+
+    gen(t->cond);
+    fprintf(out, "\tcmpq $0, %%rax\n");
+    fprintf(out, "\tje tern_%d_false\n", t->id);
+    gen(t->truee);
+    fprintf(out, "\tjmp tern_%d_end\n", t->id);
+    fprintf(out, "tern_%d_false:\n", t->id);
+    gen(t->falsee);
+    fprintf(out, "tern_%d_end:\n", t->id);
+}
+
 static void gen(struct node *n)
 {
     assert(n);
@@ -631,6 +647,9 @@ static void gen(struct node *n)
         break;
     case N_VECDEF:
         genvecdef(n);
+        break;
+    case N_TERNARY:
+        genternary(n);
         break;
     default:
         assert(0);

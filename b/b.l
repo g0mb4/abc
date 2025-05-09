@@ -27,45 +27,45 @@ word strtochar(const char *s);
 
 "/*"                    { BEGIN(COMMENT); }
 <COMMENT>"*/"           { BEGIN(INITIAL); }
-<COMMENT>\n             { }
-<COMMENT>.              { }
+<COMMENT>\n             {                 } /* update yylineno */
+<COMMENT>.              {                 }
 
 \"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return STR; }
-[\'][A-Za-z0-9_*()']+[\']   { yylval.w = strtochar(yytext); return INT; }
-[0-9]+                      { yylval.w = strtoword(yytext); return INT; }
+[\'][A-Za-z0-9_*()']+[\']   { yylval.w = strtochar(yytext); return INT;    }
+[0-9]+                      { yylval.w = strtoword(yytext); return INT;    }
 
-"auto"              { return AUTO; }
-"extrn"             { return EXTRN; }
-"if"                { return IF; }
-"else"              { return ELSE; }
-"while"             { return WHILE; }
+"auto"              { return AUTO;     }
+"extrn"             { return EXTRN;    }
+"if"                { return IF;       }
+"else"              { return ELSE;     }
+"while"             { return WHILE;    }
  /* "switch"        { return T_SWITCH; } */
  /* "case"          { return T_CASE; } */
  /* "goto"          { return T_GOTO; } */
-"return"            { return RETURN; }
+"return"            { return RETURN;   }
 
 [A-Za-z_]+      { yylval.s = strdup(yytext); return NAME; }
 
-"==="           { yylval.w = ASEQU; return ASEQU; }
-"=|="           { yylval.w = ASOREQU; return ASOREQU; }
-"=<="           { yylval.w = ASLESSEQU; return ASLESSEQU; }
+"==="           { yylval.w = ASEQU; return ASEQU;           }
+"=|="           { yylval.w = ASOREQU; return ASOREQU;       }
+"=<="           { yylval.w = ASLESSEQU; return ASLESSEQU;   }
 "=>="           { yylval.w = ASGREATEQU; return ASGREATEQU; }
-"=<<"           { yylval.w = ASSHL; return ASSHL; }
-"=>>"           { yylval.w = ASSHR; return ASSHR; }
-"=|"            { yylval.w = ASOR; return ASOR; }
-"=&"            { yylval.w = ASAND; return ASAND; }
-"=<"            { yylval.w = ASLESS; return ASLESS; }
-"=>"            { yylval.w = ASGREAT; return ASGREAT; }
-"=+"            { yylval.w = ASPLUS; return ASPLUS; }
-"=-"            { yylval.w = ASMINUS; return ASMINUS; }
-"=%"            { yylval.w = ASMOD; return ASMOD; }
-"=*"            { yylval.w = ASMUL; return ASMUL; }
-"=/"            { yylval.w = ASDIV; return ASDIV; }
+"=<<"           { yylval.w = ASSHL; return ASSHL;           }
+"=>>"           { yylval.w = ASSHR; return ASSHR;           }
+"=|"            { yylval.w = ASOR; return ASOR;             }
+"=&"            { yylval.w = ASAND; return ASAND;           }
+"=<"            { yylval.w = ASLESS; return ASLESS;         }
+"=>"            { yylval.w = ASGREAT; return ASGREAT;       }
+"=+"            { yylval.w = ASPLUS; return ASPLUS;         }
+"=-"            { yylval.w = ASMINUS; return ASMINUS;       }
+"=%"            { yylval.w = ASMOD; return ASMOD;           }
+"=*"            { yylval.w = ASMUL; return ASMUL;           }
+"=/"            { yylval.w = ASDIV; return ASDIV;           }
 
-"<="            { yylval.w = LESSEQU; return LESSEQU; }
+"<="            { yylval.w = LESSEQU; return LESSEQU;   }
 ">="            { yylval.w = GREATEQU; return GREATEQU; }
-"=="            { yylval.w = EQU; return EQU; }
-"!="            { yylval.w = NOTEQU; return NOTEQU; }
+"=="            { yylval.w = EQU; return EQU;           }
+"!="            { yylval.w = NOTEQU; return NOTEQU;     }
 
 "++"            { yylval.w = INC; return INC; }
 "--"            { yylval.w = DEC; return DEC; }
@@ -93,13 +93,17 @@ word strtochar(const char *s);
 "|"             { yylval.w = '|'; return '|'; }
 "!"             { yylval.w = '!'; return '!'; }
 
+"?"             { return '?'; }
+":"             { return ':'; }
+
 "<"             { yylval.w = '<'; return '<'; }
 ">"             { yylval.w = '>'; return '>'; }
 
 "="             { yylval.w = '='; return '='; }
 
-\n              { } /* update yylineno */
+\n              {   } /* update yylineno */
 [ \t\r]+        { ; } /* ignore whitespace */
+
 .               { yyerror("unrecognized input: %s", yytext); }
 %%  /* end of the rules */
 

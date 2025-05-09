@@ -31,6 +31,7 @@ enum {
     N_VECELEM,
     N_VARDEF,
     N_VECDEF,
+    N_TERNARY, 
 };
 
 struct node {
@@ -135,6 +136,15 @@ struct binarynode {
     struct node *right;
 };
 
+struct ternarynode  {
+    int type;
+    int id;
+
+    struct node *cond;
+    struct node *truee;
+    struct node *falsee;
+};
+
 struct returnnode {
     int type;
     int id;
@@ -203,6 +213,7 @@ struct node *mkauto(const char *s);
 struct node *mkassign(int op, struct node *l, struct node *r);
 struct node *mkbinary(int op, struct node *l, struct node *r);
 struct node *mkunary(int op, struct node *v, int pre);
+struct node *mkternary(struct node *c, struct node *t, struct node *f);
 
 struct node *mkreturn(struct node *v);
 struct node *mkif(struct node *c, struct node *t, struct node *f);

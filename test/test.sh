@@ -19,6 +19,7 @@ tests=(
     t-bitwise
     t-extvec
     t-prec
+    t-ternary
 )
 
 passed=0
