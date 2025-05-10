@@ -27,6 +27,10 @@
 
 /*
     nwrite = write(file, buffer, count);
+
+    Count bytes are written out of the vector buffer on the open
+    file designated by file.  The actual number of bytes written
+    are returned. A negative number returned indicates an error.
 */
     .global write
 write:
@@ -36,6 +40,8 @@ write:
 
 /*
     exit();
+
+    The current process is terminated.
 */
     .global exit
 exit:
@@ -45,12 +51,12 @@ exit:
     ret
 
 /*
-    putchar(char);
+    putc(c);
 
-    TODO: char can be 'a*n', or even 'abcdefgh'
+    The lower 8 bytes of c is written on the standard output file.
 */
-    .global putchar
-putchar:
+    .global putc
+putc:
     pushq %rbp
     movq %rsp, %rbp
     subq $8, %rsp

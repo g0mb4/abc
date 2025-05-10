@@ -20,6 +20,7 @@ tests=(
     t-extvec
     t-prec
     t-ternary
+    t-putchar
 )
 
 passed=0
