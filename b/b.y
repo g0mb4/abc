@@ -81,6 +81,7 @@ extern int yylineno;                    /* global variable for error report */
 %left SHL SHR
 %left '+' '-'
 %left '*' '/' '%'
+%precedence ADDR
 %precedence UNARY
 %precedence PRE
 %precedence POST
@@ -174,6 +175,7 @@ RVALUE
     | '-' RVALUE %prec UNARY    { $$ = mkunary($1, $2, 0); }
     | '!' RVALUE %prec UNARY    { $$ = mkunary($1, $2, 0); }
     /* ----------- */
+    | '&' LVALUE %prec ADDR     { $$ = mkunary($1, $2, 0); }
     /* BINARY */
     | RVALUE '|'      RVALUE    { $$ = mkbinary($2, $1, $3); }
     | RVALUE '&'      RVALUE    { $$ = mkbinary($2, $1, $3); }

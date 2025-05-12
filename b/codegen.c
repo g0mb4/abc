@@ -348,6 +348,20 @@ static void genunary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", u->id);
         break;
+    case '&':
+        assert(u->val->type == N_NAME);
+        var = finddecl(currdef->decls, u->val);
+        assert(var);
+
+        if (var->type == N_AUTO) {
+            fprintf(out, "\tleaq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+        } else if (var->type == N_EXTERN) {
+            fprintf(out, "\tmovq $%s, %%rax\n", ASEXTERN(var)->val);
+        } else {
+            assert(0);
+        }
+
+        break;
     default:
         assert(0);
     }

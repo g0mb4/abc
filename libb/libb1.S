@@ -51,30 +51,11 @@ exit:
     ret
 
 /*
-    putc(c);
-
-    The lower 8 bits of c is written on the standard output file.
-*/
-    .global putc
-putc:
-    pushq %rbp
-    movq %rsp, %rbp
-    subq $8, %rsp
-    movq %rdi, -8(%rbp)
-    movq $1, %rdi
-    leaq -8(%rbp), %rsi
-    movq $1, %rdx
-    call write
-    addq $8, %rsp
-    popq %rbp
-    ret
-
-/*
     c = char(string, i);
 
     The i-th character of the string is returned.
 
-    C:
+    C equivalent:
     word char(word string, word i) {
         char *s = (char*)string;
         return (char)s[i];

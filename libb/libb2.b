@@ -1,4 +1,20 @@
 /* 
+  The character char is written on the standard output file.
+*/
+putchar(char) {
+    extrn write;
+    auto i 0, b;
+
+    while (1) {
+        b = (char >> (i++ * 8)) & 255;
+        if (!b)
+            return;
+
+        write(1, &b, 1);
+    }
+}
+
+/* 
   The following function will print a non-negative number, n, to
   the base b, where 2<=b<=10,  This routine uses the fact that
   in the ANSCII character set, the digits O to 9 have sequential
@@ -13,20 +29,4 @@ printn(n,b) {
 		printn(a, b); /* recursive */
 
 	putchar(n%b + '0');
-}
-
-/* 
-  The character char is written on the standard output file.
-*/
-putchar(char) {
-    extrn putc;
-    auto i 0, b;
-
-    while (i < 8) {
-        b = (char >> (i++ * 8)) & 255;
-        if (!b)
-            return;
-
-        putc(b);
-    }
 }
