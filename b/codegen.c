@@ -615,6 +615,25 @@ static void genternary(struct node *n)
     fprintf(out, "tern_%d_end:\n", t->id);
 }
 
+static void genlabel(struct node *n)
+{
+    assert(n->type == N_LABEL);
+
+    struct labelnode *l = (struct labelnode*)n;
+
+    fprintf(out, "%s:\n", l->name);
+    gen(l->statement);
+}
+
+static void gengoto(struct node *n)
+{
+    assert(n->type == N_GOTO);
+
+    struct gotonode *l = (struct gotonode*)n;
+
+    fprintf(out, "\tjmp %s\n", ASNAME(l->label)->val);
+}
+
 static void gen(struct node *n)
 {
     assert(n);
@@ -675,6 +694,12 @@ static void gen(struct node *n)
         break;
     case N_TERNARY:
         genternary(n);
+        break;
+    case N_LABEL:
+        genlabel(n);
+        break;
+    case N_GOTO:
+        gengoto(n);
         break;
     default:
         assert(0);

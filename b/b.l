@@ -41,7 +41,7 @@ word strtochar(const char *s);
 "while"             { return WHILE;    }
  /* "switch"        { return T_SWITCH; } */
  /* "case"          { return T_CASE; } */
- /* "goto"          { return T_GOTO; } */
+"goto"              { return GOTO;     }
 "return"            { return RETURN;   }
 
 [A-Za-z_]+      { yylval.s = strdup(yytext); return NAME; }

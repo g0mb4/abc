@@ -31,7 +31,9 @@ enum {
     N_VECELEM,
     N_VARDEF,
     N_VECDEF,
-    N_TERNARY, 
+    N_TERNARY,
+    N_LABEL,
+    N_GOTO,
 };
 
 struct node {
@@ -193,6 +195,21 @@ struct vecdefnode {
     struct node *count;
 };
 
+struct labelnode {
+    int type;
+    int id;
+    
+    const char *name;
+    struct node *statement;
+};
+
+struct gotonode {
+    int type;
+    int id;
+    
+    struct node *label;
+};
+
 struct node *mkempty(void);
 
 struct node *mkstr(const char *s);
@@ -223,5 +240,8 @@ struct node *mkvecelem(struct node *v, struct node *i);
 
 struct node *mkvardef(struct node *name, struct node *init);
 struct node *mkvecdef(struct node *name, struct node *count);
+
+struct node *mklabel(const char *name, struct node *statement);
+struct node *mkgoto(struct node *label);
 
 #endif /* AST_H */

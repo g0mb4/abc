@@ -22,6 +22,7 @@ tests=(
     t-ternary
     t-putchar
     t-puts
+    t-goto
 )
 
 passed=0

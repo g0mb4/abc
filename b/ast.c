@@ -362,3 +362,36 @@ struct node *mkternary(struct node *c, struct node *t, struct node *f)
 
     return (struct node*)n;
 }
+
+struct node *mklabel(const char *name, struct node *statement)
+{
+    struct labelnode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_LABEL;
+    n->id = id++;
+
+    n->name = name;
+    n->statement = statement;
+
+    return (struct node*)n;
+}
+
+struct node *mkgoto(struct node *label)
+{
+    struct gotonode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_GOTO;
+    n->id = id++;
+
+    assert(label->type == N_NAME);
+
+    n->label = label;
+
+    return (struct node*)n;
+}

@@ -23,13 +23,14 @@ struct node *finddecl(struct node *dlist, struct node *name)
     }
 
     while (curr) {
-        assert(curr->val->type == N_EXTERN || curr->val->type == N_AUTO);
         if (curr->val->type == N_EXTERN) {
             if (!strcmp(ASEXTERN(curr->val)->val, namestr))
                 return ASNODE(curr->val);
-        } else {
+        } else if (curr->val->type == N_AUTO) {
             if (!strcmp(ASAUTO(curr->val)->val, namestr))
                 return ASNODE(curr->val);
+        } else {
+            assert(0);
         }
         curr = curr->next;
     }
@@ -333,6 +334,32 @@ void printternary(struct node *n, int indent)
     print(t->falsee, indent + 2);
 }
 
+void printlabel(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_LABEL);
+
+    struct labelnode *l = (struct labelnode*)n;
+
+    printf("%*sLABEL(%d) begin:\n", indent, "", l->id);
+    printf("%*sNAME: `%s`\n", indent, "", l->name);
+    printf("%*sSTATEMENTS:\n", indent, "");
+    print(l->statement, indent + 2);
+    printf("%*sLABEL(%d) end:\n", indent, "", l->id);
+}
+
+void printgoto(struct node *n, int indent)
+{
+    assert(n);
+    assert(n->type == N_GOTO);
+
+    struct gotonode *g = (struct gotonode*)n;
+
+    printf("%*sGOTO(%d) begin:\n", indent, "", g->id);
+    printf("%*sLABEL:\n", indent, "");
+    print(g->label, indent + 2);
+}
+
 void print(struct node *n, int indent)
 {
     assert(n);
@@ -398,6 +425,12 @@ void print(struct node *n, int indent)
         break;
     case N_TERNARY:
         printternary(n, indent);
+        break;
+    case N_LABEL:
+        printlabel(n, indent);
+        break;
+    case N_GOTO:
+        printgoto(n, indent);
         break;
     default:
         assert(0);

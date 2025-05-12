@@ -29,6 +29,7 @@ extern int yylineno;                    /* global variable for error report */
 %token IF
 %token ELSE
 %token WHILE
+%token GOTO
 
 %token <w>'+'
 %token <w>'-'
@@ -119,12 +120,14 @@ STATEMENTS
     ;
 
 STATEMENT
-    : EXTRN EXTRNLIST ';'                           { $$ = $2;                 }
-    | AUTO AUTOLIST ';'                             { $$ = $2;                 }
+    : AUTO AUTOLIST ';'                             { $$ = $2;                 }
+    | EXTRN EXTRNLIST ';'                           { $$ = $2;                 }
+    | NAME ':' STATEMENT                            { $$ = mklabel($1, $3);    }
     | IF '(' RVALUE ')' STATEMENT                   { $$ = mkif($3, $5, NULL); }
     | IF '(' RVALUE ')' STATEMENT ELSE STATEMENT    { $$ = mkif($3, $5, $7);   }
     | WHILE '(' RVALUE ')' STATEMENT                { $$ = mkwhile($3, $5);    }
     | '{' STATEMENTS '}'                            { $$ = $2;                 }
+    | GOTO RVALUE ';'                               { $$ = mkgoto($2);         }
     | RETURN ';'                                    { $$ = mkreturn(NULL);     }
     | RETURN '(' RVALUE ')' ';'                     { $$ = mkreturn($3);       }
     | RVALUE ';'                                    { $$ = $1;                 }
