@@ -9,7 +9,7 @@
 #define ASEXTERN(n) ((struct extrnnode *)n)
 #define ASAUTO(n) ((struct autonode *)n)
 
-typedef long long int word;
+typedef unsigned long long int word;
 #define WORDSIZE    sizeof(word)
 
 enum {

@@ -2,16 +2,24 @@
   The character char is written on the standard output file.
 */
 putchar(char) {
-    extrn write;
-    auto i 0, b;
+  extrn write;
 
-    while (1) {
-        b = (char >> (i++ * 8)) & 255;
-        if (!b)
-            return;
-
-        write(1, &b, 1);
-    }
+  if (char >= (1 << 56))
+    write(1, &char, 8);
+  else if (char >= (1 << 48))
+    write(1, &char, 7);
+  else if (char >= (1 << 40))
+    write(1, &char, 6);
+  else if (char >= (1 << 32))
+    write(1, &char, 5);
+  else if (char >= (1 << 24))
+    write(1, &char, 4);
+  else if (char >= (1 << 16))
+    write(1, &char, 3);
+  else if (char >= (1 << 8))
+    write(1, &char, 2);
+  else
+    write(1, &char, 1);
 }
 
 /* 

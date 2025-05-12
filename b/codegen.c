@@ -629,7 +629,7 @@ static void gen(struct node *n)
         fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(n)->offset);
         break;
     case N_INT:
-        fprintf(out, "\tmovq $%lld, %%rax\n", ASINT(n)->val);
+        fprintf(out, "\tmovq $%llu, %%rax\n", ASINT(n)->val);
         break;
     case N_STRING:
         genstr(n);

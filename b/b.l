@@ -117,9 +117,9 @@ int yywrap(void)
 word strtoword(const char *s)
 {
     if (*s == '0')
-        return strtoll(s, NULL, 8);
+        return strtoull(s, NULL, 8);
     else
-        return strtoll(s, NULL, 10);
+        return strtoull(s, NULL, 10);
 }
 
 int escape(char c)
