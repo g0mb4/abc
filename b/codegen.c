@@ -32,6 +32,15 @@ static void appenddata(const char *s)
     data[datactr++] = strdup(s);
 }
 
+static void appendstr(int id, const char *s)
+{
+    char buffer[128];
+
+    memset(buffer, 0, sizeof(buffer));
+    snprintf(buffer, sizeof(buffer), "str_%d: .asciz \"%s\"\n", id, s);
+    appenddata(buffer);
+}
+
 static char *argreg(int index)
 {
     switch(index) {
@@ -65,9 +74,15 @@ static void gendecl(void)
             fprintf(out, "\tsubq $%lu, %%rsp\n", WORDSIZE);
 
             if (a->init) {
-                assert(a->init->type == N_INT);
-                fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, currdef->stacksize);
-            }
+                if (a->init->type == N_INT) {
+                    fprintf(out, "\tmovq $%llu, -%llu(%%rbp)\n", ASINT(a->init)->val, currdef->stacksize);
+                } else if(a->init->type == N_STRING) {
+                    fprintf(out, "\tmovq $str_%d, -%llu(%%rbp)\n", a->init->id, currdef->stacksize);
+                    appendstr(a->init->id, ((struct strnode *)a->init)->val);
+                } else {
+                    assert(0);
+                }
+            } 
         }
         curr = curr->next;
     }
@@ -524,15 +539,11 @@ static void genvecelem(struct node *n)
 
 static void genstr(struct node *n)
 {
-    char buffer[128];
-
     assert(n->type == N_STRING);
 
     fprintf(out, "\tmovq $str_%d, %%rax\n", n->id);
 
-    memset(buffer, 0, sizeof(buffer));
-    snprintf(buffer, sizeof(buffer), "str_%d: .ascii \"%s\"\n", n->id, ASSTR(n)->val);
-    appenddata(buffer);
+    appendstr(n->id, ((struct strnode *)n)->val);
 }
 
 static void genvardef(struct node *n)

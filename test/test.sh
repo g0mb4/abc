@@ -21,6 +21,7 @@ tests=(
     t-prec
     t-ternary
     t-putchar
+    t-puts
 )
 
 passed=0
