@@ -189,7 +189,7 @@ char *strdupquotes(const char * s)
     for (i = 1; i < (len - 1); i++){
         if (s[i] == '*') {
             esc = escape(s[i+1]);
-            if (esc > 0) {
+            if (esc >= 0) {
                 i++;
                 dest[j++] = '\\';
                 dest[j++] = (char)esc;
@@ -220,7 +220,7 @@ word strtochar(const char *s)
     for (i = 1, j = 0; i < len-1; ++i, ++j) {
         if (s[i] == '*') {
             esc = escapeval(s[i+1]);
-            if (esc > 0) {
+            if (esc >= 0) {
                 w |= ((char)esc << (j * 8));
                 i++;
             } else {

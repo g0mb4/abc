@@ -2,7 +2,7 @@ puts(s) {
     extrn char, putchar;
     auto c, i 0;
 
-    while((c=char(s,i++)) != 0)
+    while((c=char(s,i++)) != '*e')
         putchar(c);
 
     putchar('*n');
