@@ -9,7 +9,7 @@
 
 extern FILE *out;    /* from main.c */
 
-// TODO: dynarr
+/* TODO: dynamic array */
 #define DATASIZE   1024
 static const char *data[DATASIZE];
 static int datactr;
@@ -675,7 +675,7 @@ static void gencasevals(struct node *n)
         fprintf(out, "\tje  case_%d\n", c->id);
 
         break;
-    /* TODO: do not generate for embedded switches */
+    /* TODO: do not generate cases for another embedded switch */
     default:
         /* do nothing */
     }

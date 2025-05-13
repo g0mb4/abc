@@ -107,7 +107,7 @@ DEFINITION
     : NAME '(' DEFLIST ')' STATEMENT  { $$ = mkfundef(mkname($1), $3, $5); }
     | NAME ';'                        { $$ = mkvardef(mkname($1), NULL);   }
     | NAME CONSTANT ';'               { $$ = mkvardef(mkname($1), $2);     }
-    | NAME '[' CONSTANT ']' ';'       { $$ = mkvecdef(mkname($1), $3);     } /* TODO: initlist */
+    | NAME '[' CONSTANT ']' ';'       { $$ = mkvecdef(mkname($1), $3);     } /* TODO: lintializer list */
     ;
 
 DEFLIST
@@ -145,7 +145,7 @@ EXTRNLIST
 
 AUTOLIST
     : NAME                          { $$ = mklist(mkdecl(mkauto($1), NULL));        }
-    | NAME CONSTANT                 { $$ = mklist(mkdecl(mkauto($1), $2));          } /* TODO: vector */
+    | NAME CONSTANT                 { $$ = mklist(mkdecl(mkauto($1), $2));          }
     | NAME ',' AUTOLIST             { $$ = listfront($3, mkdecl(mkauto($1), NULL)); }
     | NAME CONSTANT ',' AUTOLIST    { $$ = listfront($4, mkdecl(mkauto($1), $2));   }
     ;
