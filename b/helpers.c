@@ -88,7 +88,6 @@ static void printlist(struct node *n, int indent)
 
 static void printfundef(struct node *f, int indent)
 {
-    assert(f);
     assert(f->type == N_FUNDEF);
 
     printf("%*sFUNDEF(%d) begin:\n", indent+1, "", f->id);
@@ -106,7 +105,6 @@ static void printfundef(struct node *f, int indent)
 
 static void printcall(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_CALL);
 
     struct fundefnode *f = (struct fundefnode*)n;
@@ -122,7 +120,6 @@ static void printassign(struct node *n, int indent)
 {
     const char *op;
 
-    assert(n);
     assert(n->type == N_ASSIGN);
 
     struct assignnode *a = (struct assignnode*)n;
@@ -163,7 +160,6 @@ static void printassign(struct node *n, int indent)
 
 static void printbinary(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_BINARY);
 
     struct binarynode *b = (struct binarynode*)n;
@@ -197,7 +193,6 @@ static void printbinary(struct node *n, int indent)
 
 static void printreturn(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_RETURN);
 
     struct returnnode *ret = (struct returnnode*)n;
@@ -209,7 +204,6 @@ static void printreturn(struct node *n, int indent)
 
 static void printif(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_IF);
 
     struct ifnode *iff = (struct ifnode*)n;
@@ -233,7 +227,6 @@ static void printif(struct node *n, int indent)
 
 static void printwhile(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_WHILE);
 
     struct whilenode *w = (struct whilenode*)n;
@@ -252,7 +245,6 @@ static void printwhile(struct node *n, int indent)
 
 static void printunary(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_UNARY);
 
     struct unarynode *u = (struct unarynode*)n;
@@ -279,7 +271,6 @@ static void printunary(struct node *n, int indent)
 
 void printvecelem(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_VECELEM);
 
     struct vecelemnode *v = (struct vecelemnode*)n;
@@ -293,7 +284,6 @@ void printvecelem(struct node *n, int indent)
 
 void printvardef(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_VARDEF);
 
     struct vardefnode *v = (struct vardefnode*)n;
@@ -308,7 +298,6 @@ void printvardef(struct node *n, int indent)
 
 void printvecdef(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_VECDEF);
 
     struct vecdefnode *v = (struct vecdefnode*)n;
@@ -320,7 +309,6 @@ void printvecdef(struct node *n, int indent)
 
 void printternary(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_TERNARY);
 
     struct ternarynode *t = (struct ternarynode*)n;
@@ -336,7 +324,6 @@ void printternary(struct node *n, int indent)
 
 void printlabel(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_LABEL);
 
     struct labelnode *l = (struct labelnode*)n;
@@ -350,7 +337,6 @@ void printlabel(struct node *n, int indent)
 
 void printgoto(struct node *n, int indent)
 {
-    assert(n);
     assert(n->type == N_GOTO);
 
     struct gotonode *g = (struct gotonode*)n;
@@ -358,6 +344,34 @@ void printgoto(struct node *n, int indent)
     printf("%*sGOTO(%d) begin:\n", indent, "", g->id);
     printf("%*sLABEL:\n", indent, "");
     print(g->label, indent + 2);
+}
+
+void printswitch(struct node *n, int indent)
+{
+    assert(n->type == N_SWITCH);
+
+    struct switchnode *s = (struct switchnode*)n;
+
+    printf("%*sSWITCH(%d) begin:\n", indent, "", s->id);
+    printf("%*sVAL:\n", indent, "");
+    print(s->val, indent + 2);
+    printf("%*sSTATEMENT:\n", indent, "");
+    print(s->statement, indent + 2);
+    printf("%*sSWITCH(%d) end:\n", indent, "", s->id);
+}
+
+void printcase(struct node *n, int indent)
+{
+    assert(n->type == N_CASE);
+
+    struct casenode *c = (struct casenode*)n;
+
+    printf("%*sCASE(%d) begin:\n", indent, "", c->id);
+    printf("%*sCONST:\n", indent, "");
+    print(c->constant, indent + 2);
+    printf("%*sSTATEMENT:\n", indent, "");
+    print(c->statement, indent + 2);
+    printf("%*sCASE(%d) end:\n", indent, "", c->id);
 }
 
 void print(struct node *n, int indent)
@@ -431,6 +445,12 @@ void print(struct node *n, int indent)
         break;
     case N_GOTO:
         printgoto(n, indent);
+        break;
+    case N_SWITCH:
+        printswitch(n, indent);
+        break;
+    case N_CASE:
+        printcase(n, indent);
         break;
     default:
         assert(0);

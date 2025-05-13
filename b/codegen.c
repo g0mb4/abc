@@ -17,6 +17,7 @@ static int datactr;
 static struct fundefnode *currdef = NULL;
 
 static void gen(struct node *n);
+static void gencasevals(struct node *n);
 
 static void appenddata(const char *s)
 {
@@ -634,6 +635,65 @@ static void gengoto(struct node *n)
     fprintf(out, "\tjmp %s\n", ASNAME(l->label)->val);
 }
 
+static void gencase(struct node *n)
+{
+    assert(n->type == N_CASE);
+
+    struct casenode *c = (struct casenode*)n;
+
+    fprintf(out, "case_%d:\n", c->id);
+    gen(c->statement);
+}
+
+static void gencasevalslist(struct node *n)
+{
+    if (!n)
+        return;
+
+    assert(n->type == N_LIST);
+    struct listnode *curr = (struct listnode*)n;
+    while (curr) {
+        gencasevals(curr->val);
+        curr = curr->next;
+    }
+}
+
+static void gencasevals(struct node *n)
+{
+    struct casenode *c;
+
+    assert(n);
+    switch(n->type) {
+    case N_LIST:
+        gencasevalslist(n);
+        break;
+    case N_CASE:
+        c = (struct casenode *)n;
+        assert(c->constant->type == N_INT);
+
+        fprintf(out, "\tcmpq  $%llu, %%rax\n", ASINT(c->constant)->val);
+        fprintf(out, "\tje  case_%d\n", c->id);
+
+        break;
+    /* TODO: do not generate for embedded switches */
+    default:
+        /* do nothing */
+    }
+}
+
+static void genswitch(struct node *n)
+{
+    assert(n->type == N_SWITCH);
+
+    struct switchnode *s = (struct switchnode*)n;
+
+    gen(s->val);
+    gencasevals(s->statement);
+    fprintf(out, "\tjmp switch_%d_end\n", s->id);
+    gen(s->statement);
+    fprintf(out, "switch_%d_end:\n", s->id);
+}
+
 static void gen(struct node *n)
 {
     assert(n);
@@ -700,6 +760,12 @@ static void gen(struct node *n)
         break;
     case N_GOTO:
         gengoto(n);
+        break;
+    case N_CASE:
+        gencase(n);
+        break;
+    case N_SWITCH:
+        genswitch(n);
         break;
     default:
         assert(0);

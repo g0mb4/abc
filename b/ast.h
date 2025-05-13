@@ -34,6 +34,8 @@ enum {
     N_TERNARY,
     N_LABEL,
     N_GOTO,
+    N_SWITCH,
+    N_CASE
 };
 
 struct node {
@@ -210,6 +212,22 @@ struct gotonode {
     struct node *label;
 };
 
+struct switchnode {
+    int type;
+    int id;
+    
+    struct node *val;
+    struct node *statement;
+};
+
+struct casenode {
+    int type;
+    int id;
+    
+    struct node *constant;
+    struct node *statement;
+};
+
 struct node *mkempty(void);
 
 struct node *mkstr(const char *s);
@@ -243,5 +261,8 @@ struct node *mkvecdef(struct node *name, struct node *count);
 
 struct node *mklabel(const char *name, struct node *statement);
 struct node *mkgoto(struct node *label);
+
+struct node *mkswitch(struct node *val, struct node *statement);
+struct node *mkcase(struct node *constant, struct node *statement);
 
 #endif /* AST_H */

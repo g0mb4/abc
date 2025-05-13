@@ -23,6 +23,7 @@ tests=(
     t-putchar
     t-puts
     t-goto
+    t-switch
 )
 
 passed=0

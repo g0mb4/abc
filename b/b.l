@@ -39,8 +39,8 @@ word strtochar(const char *s);
 "if"                { return IF;       }
 "else"              { return ELSE;     }
 "while"             { return WHILE;    }
- /* "switch"        { return T_SWITCH; } */
- /* "case"          { return T_CASE; } */
+"switch"            { return SWITCH;   }
+"case"              { return CASE;     }
 "goto"              { return GOTO;     }
 "return"            { return RETURN;   }
 

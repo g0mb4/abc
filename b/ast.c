@@ -143,6 +143,8 @@ struct node *mkdecl(struct node *n, struct node *i)
     if (i)
         ASAUTO(n)->init = i;
 
+    /* TODO: check if variable is not defined already */
+
     decls = listback(decls, n);
     return mkempty();
 }
@@ -192,6 +194,7 @@ struct node *mkfundef(struct node *name, struct node *args, struct node *body)
     assert(name->type == N_NAME);
     n->name = name;
 
+    /* TODO: check if every arg is unique and not already defined in body */
     if (args)
         assert(args->type == N_LIST);
     n->args = args;
@@ -373,6 +376,7 @@ struct node *mklabel(const char *name, struct node *statement)
     n->type = N_LABEL;
     n->id = id++;
 
+    /* TODO: check if label is already defined */
     n->name = name;
     n->statement = statement;
 
@@ -389,9 +393,45 @@ struct node *mkgoto(struct node *label)
     n->type = N_GOTO;
     n->id = id++;
 
+    /* TODO: check if label is defined inside the current function */
     assert(label->type == N_NAME);
 
     n->label = label;
+
+    return (struct node*)n;
+}
+
+struct node *mkswitch(struct node *val, struct node *statement)
+{
+    struct switchnode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_SWITCH;
+    n->id = id++;
+
+    n->val = val;
+    n->statement = statement;
+
+    return (struct node*)n;
+}
+
+struct node *mkcase(struct node *constant, struct node *statement)
+{
+    struct casenode *n;
+    n = malloc(sizeof(*n));
+    assert(n);
+    memset(n, 0, sizeof(*n));
+
+    n->type = N_CASE;
+    n->id = id++;
+
+    if (constant->type != N_INT)
+        yyerror("only integer constants are allowed");
+
+    n->constant = constant;
+    n->statement = statement;
 
     return (struct node*)n;
 }

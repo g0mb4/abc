@@ -30,6 +30,8 @@ extern int yylineno;                    /* global variable for error report */
 %token ELSE
 %token WHILE
 %token GOTO
+%token SWITCH
+%token CASE
 
 %token <w>'+'
 %token <w>'-'
@@ -123,10 +125,12 @@ STATEMENT
     : AUTO AUTOLIST ';'                             { $$ = $2;                 }
     | EXTRN EXTRNLIST ';'                           { $$ = $2;                 }
     | NAME ':' STATEMENT                            { $$ = mklabel($1, $3);    }
+    | CASE CONSTANT ':' STATEMENT                   { $$ = mkcase($2, $4);     }
+    | '{' STATEMENTS '}'                            { $$ = $2;                 }
     | IF '(' RVALUE ')' STATEMENT                   { $$ = mkif($3, $5, NULL); }
     | IF '(' RVALUE ')' STATEMENT ELSE STATEMENT    { $$ = mkif($3, $5, $7);   }
     | WHILE '(' RVALUE ')' STATEMENT                { $$ = mkwhile($3, $5);    }
-    | '{' STATEMENTS '}'                            { $$ = $2;                 }
+    | SWITCH RVALUE STATEMENT                       { $$ = mkswitch($2, $3);   }
     | GOTO RVALUE ';'                               { $$ = mkgoto($2);         }
     | RETURN ';'                                    { $$ = mkreturn(NULL);     }
     | RETURN '(' RVALUE ')' ';'                     { $$ = mkreturn($3);       }
