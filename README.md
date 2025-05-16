@@ -5,10 +5,12 @@ A B Compiler targeting `x86_64-linux` based on [Ken Thompson's manual](doc/kbman
 > [!WARNING]
 > Compiler is not fully implemented yet, maybe it will never will be.
 
+The aim of this compiler is to compile the examples given in the manual, nothing more.
+
 Working examples:
 - [x] 9.1
 - [x] 9.2
-- [x] 9.3 (expect for a few `TODO`s)
+- [x] 9.3 (expect for a few `TODO`-s)
 
 ## Quickstart
 
