@@ -131,21 +131,21 @@ static void printassign(struct node *n, int indent)
 
     switch (a->op) {
     case '=': op = "="; break;
-    case ASEQU: op = "===" ; break;
-    case ASOREQU: op = "=|=" ; break;
-    case ASLESSEQU: op = "=<=" ; break;
-    case ASGREATEQU: op = "=>=" ; break;
-    case ASSHL: op = "=<<" ; break;
-    case ASSHR: op = "=>>" ; break;
-    case ASOR: op = "=|"  ; break;
-    case ASAND: op = "=&"  ; break;
-    case ASLESS: op = "=<"  ; break;
-    case ASGREAT: op = "=>"  ; break;
-    case ASPLUS: op = "=+"  ; break;
-    case ASMINUS: op = "=-"  ; break;
-    case ASMOD: op = "=%"  ; break;
-    case ASMUL: op = "=*"  ; break;
-    case ASDIV: op = "=/"  ; break;
+    case ASEQU: op = "==="; break;
+    case ASOREQU: op = "=|="; break;
+    case ASLESSEQU: op = "=<="; break;
+    case ASGREATEQU: op = "=>="; break;
+    case ASSHL: op = "=<<"; break;
+    case ASSHR: op = "=>>"; break;
+    case ASOR: op = "=|"; break;
+    case ASAND: op = "=&"; break;
+    case ASLESS: op = "=<"; break;
+    case ASGREAT: op = "=>"; break;
+    case ASPLUS: op = "=+"; break;
+    case ASMINUS: op = "=-"; break;
+    case ASMOD: op = "=%"; break;
+    case ASMUL: op = "=*"; break;
+    case ASDIV: op = "=/"; break;
     default:
         assert(0);
     }
@@ -381,18 +381,23 @@ void print(struct node *n, int indent)
     case N_EMPTY:
         printf("%*sEMPTY(%d)\n", indent, "", n->id);
         break;
+
     case N_STRING:
         printf("%*sSTR(%d): `%s`\n", indent, "", n->id, ASSTR(n)->val);
         break;
+
     case N_INT:
         printf("%*sINT(%d): %llu\n", indent, "", n->id, ASINT(n)->val);
         break;
+
     case N_NAME:
         printf("%*sNAME(%d): `%s`\n", indent, "", n->id, ASNAME(n)->val);
         break;
+
     case N_EXTERN:
         printf("%*sEXTERN(%d): `%s`\n", indent, "", n->id, ASEXTERN(n)->val);
         break;
+
     case N_AUTO:
         printf("%*sAUTO(%d): `%s`", indent, "", n->id, ASAUTO(n)->val);
         if (ASAUTO(n)->init) {
@@ -401,57 +406,75 @@ void print(struct node *n, int indent)
         }
         printf("\n");
         break;
+
     case N_LIST:
         printlist(n, indent);
         break;
+
     case N_CALL:
         printcall(n, indent);
         break;
+
     case N_FUNDEF:
         printfundef(n, indent);
         break;
+
     case N_ASSIGN:
         printassign(n, indent);
         break;
+
     case N_BINARY:
         printbinary(n, indent);
         break;
+
     case N_RETURN:
         printreturn(n, indent);
         break;
+
     case N_IF:
         printif(n, indent);
         break;
+
     case N_WHILE:
         printwhile(n, indent);
         break;
+
     case N_UNARY:
         printunary(n, indent);
         break;
+
     case N_VECELEM:
         printvecelem(n, indent);
         break;
+
     case N_VARDEF:
         printvardef(n, indent);
         break;
+
     case N_VECDEF:
         printvecdef(n, indent);
         break;
+
     case N_TERNARY:
         printternary(n, indent);
         break;
+
     case N_LABEL:
         printlabel(n, indent);
         break;
+
     case N_GOTO:
         printgoto(n, indent);
         break;
+
     case N_SWITCH:
         printswitch(n, indent);
         break;
+
     case N_CASE:
         printcase(n, indent);
         break;
+
     default:
         assert(0);
     };

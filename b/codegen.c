@@ -177,29 +177,36 @@ static void genbinary(struct node *n)
     case '+':
         fprintf(out, "\taddq %%rbx, %%rax\n");
         break;
+
     case '-':
         fprintf(out, "\tsubq %%rbx, %%rax\n");
         break;
+
     case '*':
         fprintf(out, "\timulq %%rbx, %%rax\n");
         break;
+
     case '/':
         fprintf(out, "\tmovq $0, %%rdx\n");
         fprintf(out, "\tcqto\n");
         fprintf(out, "\tidivq %%rbx\n");
         break;
+
     case '%':
         fprintf(out, "\tmovq $0, %%rdx\n");
         fprintf(out, "\tcqto\n");
         fprintf(out, "\tidivq %%rbx\n");
         fprintf(out, "\tmovq %%rdx, %%rax\n");
         break;
+
      case '&':
         fprintf(out, "\tandq %%rbx, %%rax\n");
         break;
+
     case '|':
         fprintf(out, "\torq %%rbx, %%rax\n");
         break;
+
     case '<':
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjge ge_%d\n", n->id);
@@ -209,6 +216,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $0, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
+
     case '>':
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjle le_%d\n", n->id);
@@ -218,6 +226,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $0, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
+
     case LESSEQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjle le_%d\n", n->id);
@@ -227,6 +236,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
+
     case GREATEQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjge ge_%d\n", n->id);
@@ -236,6 +246,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
+
     case EQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tje e_%d\n", n->id);
@@ -245,6 +256,7 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
+
     case NOTEQU:
         fprintf(out, "\tcmp %%rbx, %%rax\n");
         fprintf(out, "\tjne ne_%d\n", n->id);
@@ -254,14 +266,17 @@ static void genbinary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", n->id);
         break;
+
     case SHR:
         fprintf(out, "\tmovq %%rbx, %%rcx\n");
         fprintf(out, "\tsarq %%cl, %%rax\n");
         break;
+
     case SHL:
         fprintf(out, "\tmovq %%rbx, %%rcx\n");
         fprintf(out, "\tsalq %%cl, %%rax\n");
         break;
+
     default:
         assert(0);
     }
@@ -304,8 +319,8 @@ static void genunary(struct node *n)
                 assert(0);
             }
         }
-
         break;
+
     case DEC:
         assert(u->val->type == N_NAME);
         var = finddecl(currdef->decls, u->val);
@@ -335,10 +350,12 @@ static void genunary(struct node *n)
             }
         }
         break;
+
     case '-':
         gen(u->val);
         fprintf(out, "\tnegq %%rax\n");
         break;
+
     case '!':
         gen(u->val);
         fprintf(out, "\tcmpq $0, %%rax\n");
@@ -349,6 +366,7 @@ static void genunary(struct node *n)
         fprintf(out, "\tmovq $1, %%rax\n");
         fprintf(out, "\tend_%d:\n", u->id);
         break;
+
     case '&':
         assert(u->val->type == N_NAME);
         var = finddecl(currdef->decls, u->val);
@@ -438,6 +456,7 @@ static void genassign(struct node *n)
     case '=':
         gen(a->right);
         break;
+
     case ASEQU: assert(0 && "not implemented"); break;
     case ASOREQU: assert(0 && "not implemented"); break;
     case ASLESSEQU: assert(0 && "not implemented"); break;
@@ -451,18 +470,23 @@ static void genassign(struct node *n)
     case ASPLUS:
         gen(mkbinary('+', a->left, a->right));
         break;
+
     case ASMINUS:
         gen(mkbinary('-', a->left, a->right));
         break;
+
     case ASMOD:
         gen(mkbinary('%', a->left, a->right));
         break;
+
     case ASMUL:
         gen(mkbinary('*', a->left, a->right));
         break;
+
     case ASDIV:
         gen(mkbinary('/', a->left, a->right));
         break;
+
     default:
         assert(0);
     }
@@ -682,6 +706,7 @@ static void gencasevals(struct node *n)
     case N_LIST:
         gencasevalslist(n);
         break;
+
     case N_CASE:
         c = (struct casenode *)n;
         assert(c->constant->type == N_INT);
@@ -690,6 +715,7 @@ static void gencasevals(struct node *n)
         fprintf(out, "\tje  case_%d\n", c->id);
 
         break;
+
     /* TODO: do not generate cases for another embedded switch */
     default:
         /* do nothing */
@@ -716,72 +742,95 @@ static void gen(struct node *n)
     case N_EMPTY:
         /* do nothing */
         break;
+
     case N_EXTERN:
         fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(n)->val);
         break;
+
     case N_AUTO:
         fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(n)->offset);
         break;
+
     case N_INT:
         fprintf(out, "\tmovq $%llu, %%rax\n", ASINT(n)->val);
         break;
+
     case N_STRING:
         genstr(n);
         break;
+
     case N_NAME:
         genname(n);
         break;
+
     case N_LIST:
         genlist(n);
         break;
+
     case N_CALL:
         gencall(n);
         break;
+
     case N_FUNDEF:
         genfundef(n);
         break;
+
     case N_ASSIGN:
         genassign(n);
         break;
+
     case N_BINARY:
         genbinary(n);
         break;
+
     case N_UNARY:
         genunary(n);
         break;
+
     case N_RETURN:
         genreturn(n);
         break;
+
     case N_IF:
         genif(n);
         break;
+
     case N_WHILE:
         genwhile(n);
         break;
+
     case N_VECELEM:
         genvecelem(n);
         break;
+
     case N_VARDEF:
         genvardef(n);
         break;
+
     case N_VECDEF:
         genvecdef(n);
         break;
+
     case N_TERNARY:
         genternary(n);
         break;
+
     case N_LABEL:
         genlabel(n);
         break;
+
     case N_GOTO:
         gengoto(n);
         break;
+
     case N_CASE:
         gencase(n);
         break;
+
     case N_SWITCH:
         genswitch(n);
         break;
+
     default:
         assert(0);
     };
