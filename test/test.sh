@@ -25,6 +25,7 @@ tests=(
     t-goto
     t-switch
     t-argstack
+    t-printf
 )
 
 passed=0

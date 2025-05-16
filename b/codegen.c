@@ -72,7 +72,7 @@ static void gendecl(void)
             a = ASAUTO(curr->val);
             currdef->stacksize += WORDSIZE;
             ASAUTO(curr->val)->offset = currdef->stacksize;   /* update the list element, not the copy */
-            fprintf(out, "\tsubq $%lu, %%rsp\n", WORDSIZE);
+            fprintf(out, "\tsubq $%lu, %%rsp # %s (-%llu)\n", WORDSIZE, ASAUTO(curr->val)->val, currdef->stacksize);
 
             if (a->init) {
                 if (a->init->type == N_INT) {
@@ -92,7 +92,7 @@ static void gendecl(void)
 static void genargs(struct node *n)
 {
     struct autonode *a;
-    int i = 0, argi, len;
+    int i = 0, len, argi;
 
     assert(currdef);
 
@@ -108,16 +108,15 @@ static void genargs(struct node *n)
         a = ASAUTO(mkauto(ASNAME(curr->val)->val));
         currdef->stacksize += WORDSIZE;
         a->offset = currdef->stacksize;
-        fprintf(out, "\tsubq $%lu, %%rsp\n", WORDSIZE);
+        fprintf(out, "\tsubq $%lu, %%rsp # %s\n", WORDSIZE, ASNAME(curr->val)->val);
 
-        /* args placed in reverse order in the stack, B expects them that way */
-        argi = len - i++ - 1;
-
-        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(argi), currdef->stacksize);
+        argi = len - i - 1;
+        fprintf(out, "\tmovq %s, -%llu(%%rbp) # arg%d\n", argreg(argi), currdef->stacksize, i);
 
         currdef->decls = listback(currdef->decls, ASNODE(a));
 
         curr = curr->next;
+        i++;
     }
 }
 
@@ -499,7 +498,7 @@ static void genassign(struct node *n)
 
     if (left->type == N_AUTO) {
         if (a->left->type == N_NAME)
-            fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(left)->offset);
+            fprintf(out, "\tmovq %%rax, -%llu(%%rbp) # %s=\n", ASAUTO(left)->offset, ASAUTO(left)->val);
         else 
             assert(0);
     } else if (left->type == N_EXTERN) {
@@ -754,7 +753,7 @@ static void gen(struct node *n)
         break;
 
     case N_AUTO:
-        fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(n)->offset);
+        fprintf(out, "\tmovq -%llu(%%rbp), %%rax # %s\n", ASAUTO(n)->offset, ASAUTO(n)->val);
         break;
 
     case N_INT:

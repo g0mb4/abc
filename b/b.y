@@ -113,7 +113,7 @@ DEFINITION
 DEFLIST
     :                           { $$ = NULL;                      }
     | NAME                      { $$ = mklist(mkname($1));        }
-    | NAME ',' DEFLIST          { $$ = listfront($3, mkname($1)); }
+    | NAME ',' DEFLIST          { $$ = listback($3, mkname($1)); }
     ;
 
 STATEMENTS
