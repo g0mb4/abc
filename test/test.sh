@@ -24,6 +24,7 @@ tests=(
     t-puts
     t-goto
     t-switch
+    t-argstack
 )
 
 passed=0

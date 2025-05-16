@@ -180,6 +180,8 @@ struct node *mkcall(struct node *name, struct node *args)
 
 struct node *mkfundef(struct node *name, struct node *args, struct node *body)
 {
+    int arglen;
+
     assert(name);
     assert(body);
 
@@ -195,8 +197,14 @@ struct node *mkfundef(struct node *name, struct node *args, struct node *body)
     n->name = name;
 
     /* TODO: check if every arg is unique and not already defined in body */
-    if (args)
-        assert(args->type == N_LIST);
+    if (args) {
+        arglen = listlen(args);
+
+        if (arglen > 6) {
+            yyerror("maximum number of arguments is 6");
+        }
+    }
+
     n->args = args;
 
     if (body->type == N_LIST)

@@ -38,13 +38,30 @@ struct node *finddecl(struct node *dlist, struct node *name)
     return NULL;
 }
 
+int listlen(struct node *l)
+{
+    int len = 0;
+
+    assert(l);
+    assert(l->type == N_LIST);
+
+    struct listnode *curr = ASLIST(l);
+
+    while (curr) {
+        ++len;
+        curr = curr->next;
+    }
+
+    return len;
+}
+
 struct node *listback(struct node *l, struct node *n)
 {
     if (!l)
         return mklist(n);
 
     assert(l->type == N_LIST);
-    struct listnode *curr = (struct listnode*)l;
+    struct listnode *curr = ASLIST(l);
 
     while (curr->next) {
         curr = curr->next;

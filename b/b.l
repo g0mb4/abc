@@ -30,9 +30,9 @@ word strtochar(const char *s);
 <COMMENT>\n             {                 } /* update yylineno */
 <COMMENT>.              {                 }
 
-\"(\\.|[^"\\])*\"           { yylval.s = strdupquotes(yytext); return STR; }
-[\'][A-Za-z0-9_*() ']+[\']  { yylval.w = strtochar(yytext); return INT;    }
-[0-9]+                      { yylval.w = strtoword(yytext); return INT;    }
+\"(\\.|[^"\\])*\"               { yylval.s = strdupquotes(yytext); return STR; }
+[\'][A-Za-z0-9_*() +\-%]+[\']   { yylval.w = strtochar(yytext); return INT;    }
+[0-9]+                          { yylval.w = strtoword(yytext); return INT;    }
 
 "auto"              { return AUTO;     }
 "extrn"             { return EXTRN;    }
@@ -44,7 +44,7 @@ word strtochar(const char *s);
 "goto"              { return GOTO;     }
 "return"            { return RETURN;   }
 
-[A-Za-z_]+      { yylval.s = strdup(yytext); return NAME; }
+[A-Za-z_][A-Za-z0-9_]* { yylval.s = strdup(yytext); return NAME; }
 
 "==="           { yylval.w = ASEQU; return ASEQU;           }
 "=|="           { yylval.w = ASOREQU; return ASOREQU;       }

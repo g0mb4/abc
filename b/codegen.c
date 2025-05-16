@@ -92,6 +92,7 @@ static void gendecl(void)
 static void genargs(struct node *n)
 {
     struct autonode *a;
+    int i = 0, argi, len;
 
     assert(currdef);
 
@@ -100,14 +101,19 @@ static void genargs(struct node *n)
 
     assert(n->type == N_LIST);
     struct listnode *curr = ASLIST(n);
-    int i = 0;
+    len = listlen(n);
+
     while (curr) {
         assert(curr->val->type == N_NAME);
         a = ASAUTO(mkauto(ASNAME(curr->val)->val));
         currdef->stacksize += WORDSIZE;
         a->offset = currdef->stacksize;
         fprintf(out, "\tsubq $%lu, %%rsp\n", WORDSIZE);
-        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(i++), currdef->stacksize);
+
+        /* args placed in reverse order in the stack, B expects them that way */
+        argi = len - i++ - 1;
+
+        fprintf(out, "\tmovq %s, -%llu(%%rbp)\n", argreg(argi), currdef->stacksize);
 
         currdef->decls = listback(currdef->decls, ASNODE(a));
 
