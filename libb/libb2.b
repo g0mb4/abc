@@ -2,24 +2,24 @@
   The character char is written on the standard output file.
 */
 putchar(char) {
-  extrn write;
+    extrn write;
 
-  if (char >= (1 << 56))
-    write(1, &char, 8);
-  else if (char >= (1 << 48))
-    write(1, &char, 7);
-  else if (char >= (1 << 40))
-    write(1, &char, 6);
-  else if (char >= (1 << 32))
-    write(1, &char, 5);
-  else if (char >= (1 << 24))
-    write(1, &char, 4);
-  else if (char >= (1 << 16))
-    write(1, &char, 3);
-  else if (char >= (1 << 8))
-    write(1, &char, 2);
-  else
-    write(1, &char, 1);
+    if (char >= (1 << 56))
+        write(1, &char, 8);
+    else if (char >= (1 << 48))
+        write(1, &char, 7);
+    else if (char >= (1 << 40))
+        write(1, &char, 6);
+    else if (char >= (1 << 32))
+        write(1, &char, 5);
+    else if (char >= (1 << 24))
+        write(1, &char, 4);
+    else if (char >= (1 << 16))
+        write(1, &char, 3);
+    else if (char >= (1 << 8))
+        write(1, &char, 2);
+    else
+        write(1, &char, 1);
 }
 
 /* 
@@ -29,14 +29,13 @@ putchar(char) {
   code values.
 */
 printn(n,b) {
-	extrn putchar;
-	auto a;
-	auto c;
+    extrn putchar;
+    auto a;
 
-	if(a=n/b) /* assignment, not test for equality */
-		printn(a, b); /* recursive */
+    if(a=n/b) /* assignment, not test for equality */
+        printn(a, b); /* recursive */
 
-	putchar(n%b + '0');
+    putchar(n%b + '0');
 }
 
 /* 
@@ -57,42 +56,42 @@ printn(n,b) {
 */
 /* TODO: fix number of arguments */
 printf(fmt,x1,x2,x3,x4,x5) {
-	extrn printn, char, putchar;
-	auto adx, x, c, i, j;
+    extrn printn, char, putchar;
+    auto adx, x, c, i, j;
 
-	i = 0;	/* fmt index */
-	adx = &x1;	/* argument pointer */
+    i = 0;	/* fmt index */
+    adx = &x1;	/* argument pointer */
 
 loop :
-	while((c=char(fmt,i++)) != '%') {
-		if(c == '*e')
-			return;
-		putchar(c);
-	}
-	x = *adx;
-  adx =+ 8;   /* TODO: fix pointer arithmetic */
-	switch c = char(fmt,i++) {
+    while((c=char(fmt,i++)) != '%') {
+        if(c == '*e')
+            return;
+        putchar(c);
+    }
+    x = *adx;
+    adx =+ 8;   /* TODO: fix pointer arithmetic */
+    switch c = char(fmt,i++) {
 
-	case 'd': ; /* decimal */ /* TODO: remove ';' */
-	case 'o': /* octal */
-		if(x < 0) {
-			x = -x;
-			putchar('-');
-		}
-		printn(x, c=='o'?8:10);
-		goto loop;
+    case 'd': ; /* decimal */ /* TODO: remove ';' */
+    case 'o': /* octal */
+        if(x < 0) {
+            x = -x;
+            putchar('-');
+        }
+        printn(x, c=='o'?8:10);
+        goto loop;
 
-	case 'c' : /* char */
-		putchar(x);
-		goto loop;
+    case 'c' : /* char */
+        putchar(x);
+        goto loop;
 
-	case 's': /* string */
-		while((c=char(x, j++)) != '*e')
-			putchar(c);
-		goto loop;
-	}
-	putchar('%');
-	i--;
-  adx =- 8;    /* TODO: fix pointer arithmetic */
-	goto loop;
+    case 's': /* string */
+        while((c=char(x, j++)) != '*e')
+            putchar(c);
+        goto loop;
+    }
+    putchar('%');
+    i--;
+    adx =- 8;    /* TODO: fix pointer arithmetic */
+    goto loop;
 }
