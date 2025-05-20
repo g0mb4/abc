@@ -54,8 +54,7 @@ printn(n,b) {
 
  This program calls upon the function `printn'.
 */
-/* TODO: fix number of arguments */
-printf(fmt,x1,x2,x3,x4,x5) {
+printf(fmt,x1,x2,x3,x4,x5,x6,x7,x8,x9) {
     extrn printn, char, putchar;
     auto adx, x, c, i, j;
 

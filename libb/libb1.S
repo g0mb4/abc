@@ -3,10 +3,10 @@
 */
 
 /*
-    x86_64 calling convention:
+    calling convention:
 
     function call parameters:
-        %rdi, %rsi, %rdx, %rcx, %r8, %r9
+        %rdi, %rsi, %rdx, %rcx, %r8, %r9, %r11, %r12, %r13, %r14
     return value:
         %rax
 

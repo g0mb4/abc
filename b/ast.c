@@ -151,6 +151,7 @@ struct node *mkdecl(struct node *n, struct node *i)
 
 struct node *mkcall(struct node *name, struct node *args)
 {
+    int arglen;
     assert(name);
     assert(name->type == N_NAME);
 
@@ -161,8 +162,13 @@ struct node *mkcall(struct node *name, struct node *args)
         yyerror("unknown extrn funcion `%s`", ASNAME(name)->val);
 #endif
 
-    if (args)
-        assert(args->type == N_LIST);
+    if (args) {
+        arglen = listlen(args);
+
+        if (arglen > 10) {
+            yyerror("maximum number of arguments is 10");
+        }
+    }
     
     struct callnode *n;
     n = malloc(sizeof(*n));
@@ -200,8 +206,8 @@ struct node *mkfundef(struct node *name, struct node *args, struct node *body)
     if (args) {
         arglen = listlen(args);
 
-        if (arglen > 6) {
-            yyerror("maximum number of arguments is 6");
+        if (arglen > 10) {
+            yyerror("maximum number of arguments is 10");
         }
     }
 
