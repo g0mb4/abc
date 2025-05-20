@@ -13,4 +13,19 @@ main() {
         }
         i++;
     }
+
+    i = 0;
+    while (i < 4) {
+        switch i {
+        case 0:
+        case 2:
+            putchar('e*n');
+            goto end;
+        case 1:
+        case 3:
+            putchar('o*n');
+        }
+end:
+        i++;
+    }
 }

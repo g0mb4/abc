@@ -71,7 +71,7 @@ loop :
     adx =+ 8;   /* TODO: fix pointer arithmetic */
     switch c = char(fmt,i++) {
 
-    case 'd': ; /* decimal */ /* TODO: remove ';' */
+    case 'd': /* decimal */
     case 'o': /* octal */
         if(x < 0) {
             x = -x;
@@ -80,7 +80,7 @@ loop :
         printn(x, c=='o'?8:10);
         goto loop;
 
-    case 'c' : /* char */
+    case 'c': /* char */
         putchar(x);
         goto loop;
 

@@ -723,6 +723,8 @@ static void gencasevals(struct node *n)
         fprintf(out, "\tcmpq  $%llu, %%rax\n", ASINT(c->constant)->val);
         fprintf(out, "\tje  case_%d\n", c->id);
 
+        gencasevals(c->statement);
+
         break;
 
     /* TODO: do not generate cases for another embedded switch */
