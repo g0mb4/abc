@@ -14,7 +14,7 @@ debug: YFLAGS += --debug
 debug: YYFLAGS += --debug
 debug: b
 
-b: main.o ast.o b.tab.o lex.yy.o helpers.o codegen.o 
+b: main.o ast.o b.tab.o lex.yy.o helpers.o typecheck.o codegen.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 b.tab.c b.tab.y: b.y

@@ -5,6 +5,8 @@
 #include <stdarg.h>
 
 #include "ast.h"
+#include "helpers.h"
+#include "typecheck.h"
 #include "codegen.h"
 
 extern int yylex(void);                 /* yyparse() needs it */
@@ -95,7 +97,13 @@ extern int yylineno;                    /* global variable for error report */
 %%
 
 PROGRAM
-    : DEFINITIONS   { codegen($1); }
+    : DEFINITIONS   {
+                        #ifdef DEBUG
+                            print($1, 0);
+                        #endif
+                        typecheck($1);
+                        codegen($1);
+                    }
     ;
 
 DEFINITIONS

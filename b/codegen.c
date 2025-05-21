@@ -87,7 +87,7 @@ static void gendecl(void)
                 } else {
                     assert(0);
                 }
-            } 
+            }
         }
         curr = curr->next;
     }
@@ -181,7 +181,7 @@ static void genbinary(struct node *n)
     fprintf(out, "\tpushq %%rax\n");
     gen(b->left);   // value in %rax
     fprintf(out, "\tpopq %%rbx\n");
-   
+
     switch(b->op) {
     case '+':
         fprintf(out, "\taddq %%rbx, %%rax\n");
@@ -412,7 +412,7 @@ static void genunary(struct node *n)
 
 static void gencall(struct node *n)
 {
-    int argindex; 
+    int argindex;
     assert(n);
     assert(n->type == N_CALL);
 
@@ -503,7 +503,7 @@ static void genassign(struct node *n)
     if (left->type == N_AUTO) {
         if (a->left->type == N_NAME)
             fprintf(out, "\tmovq %%rax, -%llu(%%rbp) # %s=\n", ASAUTO(left)->offset, ASAUTO(left)->val);
-        else 
+        else
             assert(0);
     } else if (left->type == N_EXTERN) {
         if (a->left->type == N_NAME) {
@@ -621,10 +621,10 @@ static void genvardef(struct node *n)
 
     if (v->init) {
         assert(v->init->type == N_INT);
-        snprintf(buffer, sizeof(buffer), "%s: .quad %lld\n", 
+        snprintf(buffer, sizeof(buffer), "%s: .quad %lld\n",
                  ASNAME(v->name)->val, ASINT(v->init)->val);
     } else {
-        snprintf(buffer, sizeof(buffer), "%s: .zero %lu\n", 
+        snprintf(buffer, sizeof(buffer), "%s: .zero %lu\n",
                  ASNAME(v->name)->val, WORDSIZE);
     }
 
@@ -644,7 +644,7 @@ static void genvecdef(struct node *n)
     assert(v->count->type == N_INT);
     snprintf(buffer, sizeof(buffer), "%s: .zero %lld\n",
              ASNAME(v->name)->val, ASINT(v->count)->val * WORDSIZE);
-    
+
     appenddata(buffer);
 }
 
@@ -853,10 +853,6 @@ static void gen(struct node *n)
 
 void codegen(struct node* root)
 {
-#ifdef DEBUG
-    print(root, 0);
-#endif
-
     fprintf(out, "\t.text\n");
     gen(root);
 
