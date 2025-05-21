@@ -75,7 +75,7 @@ static void gendecl(void)
         if (curr->val->type == N_AUTO) {
             a = ASAUTO(curr->val);
             currdef->stacksize += WORDSIZE;
-            ASAUTO(curr->val)->offset = currdef->stacksize;   /* update the list element, not the copy */
+            a->offset = currdef->stacksize;
             fprintf(out, "\tsubq $%lu, %%rsp # %s (-%llu)\n", WORDSIZE, ASAUTO(curr->val)->val, currdef->stacksize);
 
             if (a->init) {
@@ -728,6 +728,10 @@ static void gencasevals(struct node *n)
         break;
 
     /* TODO: do not generate cases for another embedded switch */
+    case N_SWITCH:
+        assert(0);
+        break;
+
     default:
         /* do nothing */
     }
