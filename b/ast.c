@@ -9,6 +9,7 @@
 static int id = 0;
 static struct node *decls = NULL;
 
+extern int yylineno;                    /* global variable for error report */
 extern void yyerror(const char * s, ...);
 
 struct node *mkempty(void)
@@ -20,6 +21,7 @@ struct node *mkempty(void)
 
     n->type = N_EMPTY;
     n->id = id++;
+    n->lineno = yylineno;
 
     return n;
 }
@@ -33,6 +35,7 @@ struct node *mkstr(const char *s)
 
     n->type = N_STRING;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = strdup(s);
 
@@ -48,6 +51,7 @@ struct node *mkint(word w)
 
     n->type = N_INT;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = w;
 
@@ -63,6 +67,7 @@ struct node *mkname(const char *s)
 
     n->type = N_NAME;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = strdup(s);
 
@@ -71,13 +76,14 @@ struct node *mkname(const char *s)
 
 struct node *mkextrn(const char *s)
 {
-    struct namenode *n;
+    struct extrnnode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
 
     n->type = N_EXTERN;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = strdup(s);
 
@@ -86,13 +92,14 @@ struct node *mkextrn(const char *s)
 
 struct node *mkauto(const char *s)
 {
-    struct namenode *n;
+    struct autonode *n;
     n = malloc(sizeof(*n));
     assert(n);
     memset(n, 0, sizeof(*n));
 
     n->type = N_AUTO;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = strdup(s);
 
@@ -108,10 +115,11 @@ struct node *mkassign(int op, struct node *l, struct node *r)
 
     struct node* d = finddecl(decls, l);
     if (!d)
-        yyerror("unknown variable `%s`", ASNAME(l)->val);
+        nerror(l, "unknown variable `%s`", ASNAME(l)->val);
 
     n->type = N_ASSIGN;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->op = op;
     n->left = l;
@@ -129,6 +137,7 @@ struct node *mklist(struct node *e)
 
     n->type = N_LIST;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = e;
 
@@ -140,11 +149,10 @@ struct node *mkdecl(struct node *n, struct node *i)
     if (n->type == N_EXTERN)
         assert(i == NULL);
 
-    if (i)
+    if (i && n->type == N_AUTO)
         ASAUTO(n)->init = i;
 
     /* TODO: check if variable is not defined already */
-
     decls = listback(decls, n);
     return mkempty();
 }
@@ -162,14 +170,6 @@ struct node *mkcall(struct node *name, struct node *args)
         yyerror("unknown extrn funcion `%s`", ASNAME(name)->val);
 #endif
 
-    if (args) {
-        arglen = listlen(args);
-
-        if (arglen > 10) {
-            yyerror("maximum number of arguments is 10");
-        }
-    }
-    
     struct callnode *n;
     n = malloc(sizeof(*n));
     assert(n);
@@ -177,8 +177,18 @@ struct node *mkcall(struct node *name, struct node *args)
 
     n->type = N_CALL;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->name = name;
+
+    if (args) {
+        arglen = listlen(args);
+
+        if (arglen > 10) {
+            nerror(args, "maximum number of arguments is 10");
+        }
+    }
+
     n->args = args;
 
     return (struct node*)n;
@@ -198,6 +208,7 @@ struct node *mkfundef(struct node *name, struct node *args, struct node *body)
 
     n->type = N_FUNDEF;
     n->id = id++;
+    n->lineno = yylineno;
 
     assert(name->type == N_NAME);
     n->name = name;
@@ -207,7 +218,7 @@ struct node *mkfundef(struct node *name, struct node *args, struct node *body)
         arglen = listlen(args);
 
         if (arglen > 10) {
-            yyerror("maximum number of arguments is 10");
+            nerror(args, "maximum number of arguments is 10");
         }
     }
 
@@ -234,6 +245,7 @@ struct node *mkbinary(int op, struct node *l, struct node *r)
 
     n->type = N_BINARY;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->op = op;
     n->left = l;
@@ -251,6 +263,7 @@ struct node *mkunary(int op, struct node *v, int pre)
 
     n->type = N_UNARY;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->op = op;
     n->val = v;
@@ -268,6 +281,7 @@ struct node *mkreturn(struct node *v)
 
     n->type = N_RETURN;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = v;
 
@@ -283,6 +297,7 @@ struct node *mkif(struct node *c, struct node *t, struct node *f)
 
     n->type = N_IF;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->cond = c;
     n->truee = t;
@@ -300,6 +315,7 @@ struct node *mkwhile(struct node *c, struct node *b)
 
     n->type = N_WHILE;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->cond = c;
     n->body = b;
@@ -316,6 +332,7 @@ struct node *mkvecelem(struct node *v, struct node *i)
 
     n->type = N_VECELEM;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->vec = v;
     n->index = i;
@@ -332,11 +349,12 @@ struct node *mkvardef(struct node *name, struct node *init)
 
     n->type = N_VARDEF;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->name = name;
 
     if (init && init->type != N_INT)
-        yyerror("inital value must be an integer");
+        nerror(init, "inital value must be an integer");
 
     n->init = init;
 
@@ -352,11 +370,12 @@ struct node *mkvecdef(struct node *name, struct node *count)
 
     n->type = N_VECDEF;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->name = name;
 
     if (count->type != N_INT)
-        yyerror("count must be an integer");
+        nerror(count, "count must be an integer");
 
     n->count = count;
 
@@ -372,6 +391,7 @@ struct node *mkternary(struct node *c, struct node *t, struct node *f)
 
     n->type = N_TERNARY;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->cond = c;
     n->truee = t;
@@ -389,6 +409,7 @@ struct node *mklabel(const char *name, struct node *statement)
 
     n->type = N_LABEL;
     n->id = id++;
+    n->lineno = yylineno;
 
     /* TODO: check if label is already defined */
     n->name = name;
@@ -406,6 +427,7 @@ struct node *mkgoto(struct node *label)
 
     n->type = N_GOTO;
     n->id = id++;
+    n->lineno = yylineno;
 
     /* TODO: check if label is defined inside the current function */
     assert(label->type == N_NAME);
@@ -424,6 +446,7 @@ struct node *mkswitch(struct node *val, struct node *statement)
 
     n->type = N_SWITCH;
     n->id = id++;
+    n->lineno = yylineno;
 
     n->val = val;
     n->statement = statement;
@@ -442,7 +465,7 @@ struct node *mkcase(struct node *constant, struct node *statement)
     n->id = id++;
 
     if (constant->type != N_INT)
-        yyerror("only integer constants are allowed");
+        nerror(constant, "only integer constants are allowed");
 
     n->constant = constant;
     n->statement = statement;

@@ -1,5 +1,6 @@
 #include "codegen.h"
 #include "helpers.h"
+#include "typecheck.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -184,10 +185,12 @@ static void genbinary(struct node *n)
 
     switch(b->op) {
     case '+':
+         /* TODO: pointer arithmetics */
         fprintf(out, "\taddq %%rbx, %%rax\n");
         break;
 
     case '-':
+        /* TODO: pointer arithmetics */
         fprintf(out, "\tsubq %%rbx, %%rax\n");
         break;
 
@@ -298,6 +301,7 @@ static void genunary(struct node *n)
 
     struct unarynode *u = (struct unarynode*)n;
     struct node *var;
+    int t;
 
     switch(u->op) {
     case INC:
@@ -305,32 +309,57 @@ static void genunary(struct node *n)
         var = finddecl(currdef->decls, u->val);
         assert(var);
 
+        assert(currdef);
+        t = calctype(u->val, ASNAME(currdef->name)->val);
+        assert(t >= 0);
+
         if (u->pre) {
-            if (var->type == N_AUTO) {
-                fprintf(out, "\taddq $1, -%llu(%%rbp)\n", ASAUTO(var)->offset);
-                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
-            } else if (var->type == N_EXTERN) {
-                fprintf(out, "\taddq $1, %s\n", ASEXTERN(var)->val);
-                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+            if (t) {
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\taddq $%lu, -%llu(%%rbp)\n", WORDSIZE, ASAUTO(var)->offset);
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\taddq $%lu, %s\n", WORDSIZE, ASEXTERN(var)->val);
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                } else {
+                    assert(0);
+                }
             } else {
-                assert(0);
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\taddq $1, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                } else {
+                    assert(0);
+                }
             }
         } else {
-            if (var->type == N_AUTO) {
-                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
-                fprintf(out, "\tleaq 1(%%rax), %%rbx\n");
-                fprintf(out, "\tmovq %%rbx, -%llu(%%rbp)\n", ASAUTO(var)->offset);
-            } else if (var->type == N_EXTERN) {
-                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
-                fprintf(out, "\tleaq 1(%%rax), %%rbx\n");
-                fprintf(out, "\tmovq %%rbx, %s\n", ASEXTERN(var)->val);
+            if (t) {
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                    fprintf(out, "\taddq $%lu, %%rax\n", WORDSIZE);
+                    fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                } else {
+                    assert(0);
+                }
             } else {
-                assert(0);
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                    fprintf(out, "\tleaq 1(%%rax), %%rbx\n");
+                    fprintf(out, "\tmovq %%rbx, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                    fprintf(out, "\tleaq 1(%%rax), %%rbx\n");
+                    fprintf(out, "\tmovq %%rbx, %s\n", ASEXTERN(var)->val);
+                } else {
+                    assert(0);
+                }
             }
         }
         break;
 
     case DEC:
+        /* TODO: pointer arithmetics */
+
         assert(u->val->type == N_NAME);
         var = finddecl(currdef->decls, u->val);
         assert(var);
@@ -853,10 +882,8 @@ static void gen(struct node *n)
 
 void codegen(struct node* root)
 {
-    struct node* r = root;
-
     fprintf(out, "\t.text\n");
-    gen(r);
+    gen(root);
 
     fprintf(out, "\t.data\n");
     for (int i = 0; i < datactr; ++i) {

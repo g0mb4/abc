@@ -26,6 +26,7 @@ tests=(
     t-switch
     t-argstack
     t-printf
+    t-parith
 )
 
 passed=0

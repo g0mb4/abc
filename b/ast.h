@@ -41,18 +41,21 @@ enum {
 struct node {
     int type;
     int id;
+    int lineno;
 };
 
 struct strnode {
     int type;
     int id;
-    
+    int lineno;
+
     const char *val;
 };
 
 struct intnode {
     int type;
     int id;
+    int lineno;
 
     word val;
 };
@@ -60,13 +63,15 @@ struct intnode {
 struct namenode {
     int type;
     int id;
-    
+    int lineno;
+
     const char *val;
 };
 
 struct listnode {
     int type;
     int id;
+    int lineno;
 
     struct node *val;
     struct listnode *next;
@@ -75,6 +80,7 @@ struct listnode {
 struct callnode {
     int type;
     int id;
+    int lineno;
 
     struct node *name;
     struct node *args;
@@ -83,6 +89,7 @@ struct callnode {
 struct fundefnode {
     int type;
     int id;
+    int lineno;
 
     struct node *name;
     struct node *args;
@@ -96,25 +103,28 @@ struct fundefnode {
 struct extrnnode {
     int type;
     int id;
-    
+    int lineno;
+
     const char *val;
 };
 
 struct autonode {
     int type;
     int id;
-    
+    int lineno;
+
     const char *val;
     struct node *init;
 
     /* for codegen */
-    word offset;    
+    word offset;
 };
 
 struct assignnode {
     int type;
     int id;
-    
+    int lineno;
+
     int op;
     struct node *left;
     struct node *right;
@@ -123,9 +133,9 @@ struct assignnode {
 struct unarynode {
     int type;
     int id;
+    int lineno;
 
     int op;
-    
     struct node *val;
     int pre;
 };
@@ -133,9 +143,9 @@ struct unarynode {
 struct binarynode {
     int type;
     int id;
+    int lineno;
 
     int op;
-    
     struct node *left;
     struct node *right;
 };
@@ -143,6 +153,7 @@ struct binarynode {
 struct ternarynode  {
     int type;
     int id;
+    int lineno;
 
     struct node *cond;
     struct node *truee;
@@ -152,14 +163,16 @@ struct ternarynode  {
 struct returnnode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *val;
 };
 
 struct ifnode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *cond;
     struct node *truee;
     struct node *falsee;
@@ -168,7 +181,8 @@ struct ifnode {
 struct whilenode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *cond;
     struct node *body;
 };
@@ -176,7 +190,8 @@ struct whilenode {
 struct vecelemnode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *vec;
     struct node *index;
 };
@@ -184,7 +199,8 @@ struct vecelemnode {
 struct vardefnode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *name;
     struct node *init;
 };
@@ -192,7 +208,8 @@ struct vardefnode {
 struct vecdefnode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *name;
     struct node *count;
 };
@@ -200,7 +217,8 @@ struct vecdefnode {
 struct labelnode {
     int type;
     int id;
-    
+    int lineno;
+
     const char *name;
     struct node *statement;
 };
@@ -208,14 +226,16 @@ struct labelnode {
 struct gotonode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *label;
 };
 
 struct switchnode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *val;
     struct node *statement;
 };
@@ -223,7 +243,8 @@ struct switchnode {
 struct casenode {
     int type;
     int id;
-    
+    int lineno;
+
     struct node *constant;
     struct node *statement;
 };
