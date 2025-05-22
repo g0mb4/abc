@@ -22,11 +22,19 @@ ld -o hw libb/brt1.o b.out.o libb/libb.a
 ./hw
 ```
 
+## Debug
+
+Run ```make debug``` then
+```bash
+b/b examples/hw.b
+```
+to get a **lot** of debug information.
+
 ## Tests
 
 ```bash
 make check
 ```
 
-If you want to add a new test, modify *test/test.sh*s `tests` list, then
+If you want to add a new test, modify *test/test.sh*s `tests` list by adding the name of the test file without the extension, then
 `./test.sh gen`.
