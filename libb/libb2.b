@@ -1,4 +1,4 @@
-/* 
+/*
   The character char is written on the standard output file.
 */
 putchar(char) {
@@ -38,7 +38,7 @@ printn(n,b) {
     putchar(n%b + '0');
 }
 
-/* 
+/*
  The following function is a general formatting, printing, and
  conversion subroutine.  The first argument is a format string.
  Character sequences of the form '%x' are interpreted and cause
@@ -68,7 +68,7 @@ loop:
         putchar(c);
     }
     x = *adx;
-    adx =+ 8;   /* TODO: fix pointer arithmetics */
+    adx++;  /* TODO: fix this */
     switch c = char(fmt,i++) {
 
     case 'd': /* decimal */
@@ -91,6 +91,6 @@ loop:
     }
     putchar('%');
     i--;
-    adx =- 8;    /* TODO: fix pointer arithmetics */
+    adx--;
     goto loop;
 }

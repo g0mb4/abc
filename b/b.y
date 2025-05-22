@@ -86,10 +86,11 @@ extern int yylineno;                    /* global variable for error report */
 %left SHL SHR
 %left '+' '-'
 %left '*' '/' '%'
-%precedence ADDR
-%precedence UNARY
-%precedence PRE
-%precedence POST
+%right DEREF
+%right ADDR
+%right UNARY
+%right PRE
+%left POST
 /* highest precedence */
 
 %start PROGRAM
@@ -191,6 +192,7 @@ RVALUE
     | '!' RVALUE %prec UNARY    { $$ = mkunary($1, $2, 0); }
     /* ----------- */
     | '&' RVALUE %prec ADDR     { $$ = mkunary($1, $2, 0); }
+    | '*' RVALUE %prec DEREF    { $$ = mkunary($1, $2, 0); }
     /* BINARY */
     | RVALUE '|'      RVALUE    { $$ = mkbinary($2, $1, $3); }
     | RVALUE '&'      RVALUE    { $$ = mkbinary($2, $1, $3); }
@@ -220,7 +222,6 @@ CALLIST
 
 LVALUE
     : NAME                  { $$ = mkname($1);          }
-    | '*' RVALUE            { $$ = mkunary($1, $2, 0);  }
     | RVALUE '[' RVALUE ']' { $$ = mkvecelem($1, $3);   }
     ;
 

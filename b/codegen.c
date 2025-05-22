@@ -178,6 +178,14 @@ static void genbinary(struct node *n)
 
     struct binarynode *b = (struct binarynode*)n;
 
+
+    assert(currdef);
+    int tr = calctype(b->right, ASNAME(currdef->name)->val);
+    int tl = calctype(b->left, ASNAME(currdef->name)->val);
+
+    /* TODO: pointer arithmetics */
+    assert(tr == 0 && tl == 0);
+
     gen(b->right);  // value in %rax
     fprintf(out, "\tpushq %%rax\n");
     gen(b->left);   // value in %rax
@@ -328,6 +336,9 @@ static void genunary(struct node *n)
                 if (var->type == N_AUTO) {
                     fprintf(out, "\taddq $1, -%llu(%%rbp)\n", ASAUTO(var)->offset);
                     fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\taddq $1, %s\n", ASEXTERN(var)->val);
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
                 } else {
                     assert(0);
                 }
@@ -338,6 +349,10 @@ static void genunary(struct node *n)
                     fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
                     fprintf(out, "\taddq $%lu, %%rax\n", WORDSIZE);
                     fprintf(out, "\tmovq %%rax, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                    fprintf(out, "\taddq $%lu, %%rax\n", WORDSIZE);
+                    fprintf(out, "\tmovq %%rax, %s\n", ASEXTERN(var)->val);
                 } else {
                     assert(0);
                 }
@@ -358,33 +373,59 @@ static void genunary(struct node *n)
         break;
 
     case DEC:
-        /* TODO: pointer arithmetics */
-
         assert(u->val->type == N_NAME);
         var = finddecl(currdef->decls, u->val);
         assert(var);
 
+        assert(currdef);
+        t = calctype(u->val, ASNAME(currdef->name)->val);
+        assert(t >= 0);
+
         if (u->pre) {
-            if (var->type == N_AUTO) {
-                fprintf(out, "\tsubq $1, -%llu(%%rbp)\n", ASAUTO(var)->offset);
-                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
-            } else if (var->type == N_EXTERN) {
-                fprintf(out, "\tsubq $1, %s\n", ASEXTERN(var)->val);
-                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+            if (t) {
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\tsubq $%lu, -%llu(%%rbp)\n", WORDSIZE, ASAUTO(var)->offset);
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\tsubq $%lu, %s\n", WORDSIZE, ASEXTERN(var)->val);
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                } else {
+                    assert(0);
+                }
             } else {
-                assert(0);
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\tsubq $1, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\tsubq $1, %s\n", ASEXTERN(var)->val);
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                } else {
+                    assert(0);
+                }
             }
         } else {
-            if (var->type == N_AUTO) {
-                fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
-                fprintf(out, "\tleaq -1(%%rax), %%rbx\n");
-                fprintf(out, "\tmovq %%rbx, -%llu(%%rbp)\n", ASAUTO(var)->offset);
-            } else if (var->type == N_EXTERN) {
-                fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
-                fprintf(out, "\tleaq -1(%%rax), %%rbx\n");
-                fprintf(out, "\tmovq %%rbx, %s\n", ASEXTERN(var)->val);
+            if (t) {
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                    fprintf(out, "\tsubq $%lu, %%rax\n", WORDSIZE);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                    fprintf(out, "\tsubq $%lu, %%rax\n", WORDSIZE);
+                } else {
+                    assert(0);
+                }
             } else {
-                assert(0);
+                if (var->type == N_AUTO) {
+                    fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
+                    fprintf(out, "\tleaq -1(%%rax), %%rbx\n");
+                    fprintf(out, "\tmovq %%rbx, -%llu(%%rbp)\n", ASAUTO(var)->offset);
+                } else if (var->type == N_EXTERN) {
+                    fprintf(out, "\tmovq %s, %%rax\n", ASEXTERN(var)->val);
+                    fprintf(out, "\tleaq -1(%%rax), %%rbx\n");
+                    fprintf(out, "\tmovq %%rbx, %s\n", ASEXTERN(var)->val);
+                } else {
+                    assert(0);
+                }
             }
         }
         break;
@@ -420,17 +461,7 @@ static void genunary(struct node *n)
         break;
 
     case '*':
-        assert(u->val->type == N_NAME);
-        var = finddecl(currdef->decls, u->val);
-        assert(var);
-
-        if (var->type == N_AUTO) {
-            fprintf(out, "\tmovq -%llu(%%rbp), %%rax\n", ASAUTO(var)->offset);
-        } else if (var->type == N_EXTERN) {
-            fprintf(out, "\tmovq %s(%%rip), %%rax\n", ASEXTERN(var)->val);
-        } else {
-            assert(0);
-        }
+        gen(u->val);
         fprintf(out, "\tmovq (%%rax), %%rax\n");
         break;
 

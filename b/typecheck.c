@@ -201,6 +201,19 @@ static void buildauto(struct node *n)
     settype(ASNAME(currdef->name)->val, ASAUTO(n)->val, 0);
 }
 
+static void buildfunargs(struct node *n)
+{
+    assert(currdef);
+    assert(n->type == N_LIST);
+    struct listnode *curr = ASLIST(n);
+
+    while (curr) {
+        assert(curr->val->type == N_NAME);
+        addtype(ASNAME(currdef->name)->val, ASNAME(curr->val)->val, 0);
+        curr = curr->next;
+    }
+}
+
 static void buildfundef(struct node *n)
 {
     assert(currdef == NULL);
@@ -209,6 +222,9 @@ static void buildfundef(struct node *n)
     struct fundefnode *def = (struct fundefnode*)n;
 
     currdef = def;
+
+    if (def->args)
+        buildfunargs(def->args);
 
     if (def->decls)
         build(def->decls);
@@ -244,7 +260,9 @@ static int calcunary(struct node *n, const char *scope)
 
     switch (u->op) {
     case '*':
-        assert(t > 0);
+        if (t == 0)
+            nerror(n, "cannot dereference");
+
         return t - 1;
     case '&':
         return t + 1;
@@ -305,6 +323,8 @@ static int calcvecelem(struct node *n, const char *scope)
 
 int calctype(struct node *n, const char *scope)
 {
+    assert(scope);
+
     switch(n->type) {
         case N_NAME:
             return calcname(n, scope);
