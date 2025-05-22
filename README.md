@@ -8,9 +8,9 @@ A B Compiler targeting `x86_64-linux` based on [Ken Thompson's manual](doc/kbman
 The aim of this compiler is to compile the examples given in the manual, nothing more.
 
 Working examples:
-- [x] 9.1
-- [x] 9.2
-- [x] 9.3
+- [x] 9.1 (libb/libb2.b)
+- [x] 9.2 (examples/e-2.b)
+- [x] 9.3 (libb/libb2.b)
 
 ## Quickstart
 
