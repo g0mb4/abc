@@ -178,7 +178,6 @@ static void genbinary(struct node *n)
 
     struct binarynode *b = (struct binarynode*)n;
 
-
     assert(currdef);
     int tr = calctype(b->right, ASNAME(currdef->name)->val);
     int tl = calctype(b->left, ASNAME(currdef->name)->val);
@@ -461,8 +460,22 @@ static void genunary(struct node *n)
         break;
 
     case '*':
-        gen(u->val);
-        fprintf(out, "\tmovq (%%rax), %%rax\n");
+        /* NOTE: hack for *p++, precedence is wrong :( */
+        if (u->val->type == N_UNARY) {
+            struct unarynode *u2 = (struct unarynode*)u->val;
+            if ((u2->op == INC || u2->op == DEC) && !u2->pre) {
+                gen(mkunary('*', u2->val, 0));
+                fprintf(out, "\tpushq %%rax\n");
+                gen(ASNODE(u2));
+                fprintf(out, "\tpopq %%rax\n");
+            } else {
+                gen(u->val);
+                fprintf(out, "\tmovq (%%rax), %%rax\n");
+            }
+        } else {
+            gen(u->val);
+            fprintf(out, "\tmovq (%%rax), %%rax\n");
+        }
         break;
 
     default:

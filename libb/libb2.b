@@ -67,8 +67,7 @@ loop:
             return;
         putchar(c);
     }
-    x = *adx;
-    adx++;  /* TODO: fix this */
+    x = *adx++;
     switch c = char(fmt,i++) {
 
     case 'd': /* decimal */

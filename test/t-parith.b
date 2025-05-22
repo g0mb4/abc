@@ -9,9 +9,7 @@ main() {
    p++;
 
    printf("%d*n", r);
-   /*printf("%d*n", *p++); TODO: fix this */
-   printf("%d*n", *p);
-   p++;
+   printf("%d*n", *p++);
    printf("%d*n", *++p);
 }
 

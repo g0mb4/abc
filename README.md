@@ -10,7 +10,7 @@ The aim of this compiler is to compile the examples given in the manual, nothing
 Working examples:
 - [x] 9.1
 - [x] 9.2
-- [x] 9.3 (expect for a few `TODO`-s)
+- [x] 9.3
 
 ## Quickstart
 
