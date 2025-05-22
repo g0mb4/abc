@@ -5,7 +5,7 @@ arg(a,b,c){
     p = &b;
     printn(*p, 10);
 
-    p =+ 8;  /* TODO: pointer arithmetic */
+    p++;
     printn(*p, 10);
 }
 
