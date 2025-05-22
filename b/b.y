@@ -99,7 +99,7 @@ extern int yylineno;                    /* global variable for error report */
 PROGRAM
     : DEFINITIONS   {
                         #ifdef DEBUG
-                            print($1, 0);
+                            print($1);
                         #endif
                         typecheck($1);
                         codegen($1);

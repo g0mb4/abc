@@ -853,8 +853,10 @@ static void gen(struct node *n)
 
 void codegen(struct node* root)
 {
+    struct node* r = root;
+
     fprintf(out, "\t.text\n");
-    gen(root);
+    gen(r);
 
     fprintf(out, "\t.data\n");
     for (int i = 0; i < datactr; ++i) {

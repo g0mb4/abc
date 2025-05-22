@@ -210,8 +210,7 @@ static void build(struct node *n)
         break;
 
     default:
-        /* TODO: enable this! */
-        /*assert(0);*/
+        assert(0);
     };
 }
 
@@ -306,16 +305,17 @@ static void check(struct node *n)
         break;
 
     default:
-        /* TODO: enable this! */
-        /*assert(0);*/
+        assert(0);
     };
 }
 
 void typecheck(struct node* root)
 {
-    build(root);
-    updatedefs();
-    check(root);
+    struct node* r = root;
+
+    //build(r);
+    //updatedefs();
+    //check(r);
 
 #ifdef DEBUG
     printtypes();

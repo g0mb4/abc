@@ -8,6 +8,6 @@ struct node *listfront(struct node *l, struct node *n);
 struct node *listback(struct node *l, struct node *n);
 int listlen(struct node *l);
 
-void print(struct node *n, int indent);
+void print(struct node *n);
 
 #endif /* HELPERS_H */
